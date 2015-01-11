@@ -6,7 +6,7 @@ GradientFilter::GradientFilter()
 	lambda = 0.1;
 	tao = 0.5;
 	stopItrCost = 0.01;
-	stopMaxItrCount = 2;
+	stopMaxItrCount = 5;
 	stopPixelVal = 10.0;
 }
 GradientFilter::~GradientFilter()
@@ -83,17 +83,22 @@ Mat GradientFilter::optimize()
 				currentImg.at<double>(i,j) = x[0];
 				sumCost += cost;
 			}
+
+			std::cout<<"iteration "<<++(data.itrCount)<<": cost = "<<sumCost<<std::endl;
+			/* show progress */
 			Mat show;
 			resize(currentImg, show, imgSize);
 			imshow("Current Image", show);
-			std::cout<<"iteration "<<++(data.itrCount)<<": cost = "<<sumCost<<std::endl;
 			waitKey(10);
+
 	}while (sumCost>=stopItrCost && data.itrCount < stopMaxItrCount);
 
 	//Mat residual = abs(m_inputImg - currentImg);
 	//resize(residual, residual, imgSize);
 	//imshow("residual", residual);
-	return currentImg.clone();
+	Mat output;
+	resize(currentImg, output, imgSize);
+	return output;
 }
 
 Mat GradientFilter::getGradient(Mat src )

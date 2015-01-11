@@ -1,5 +1,5 @@
 #include <opencv2\opencv.hpp>
-#include "GradientFilter.h"
+#include "LightingEstimation.h"
 using namespace cv;
 
 int main(void)
@@ -10,17 +10,10 @@ int main(void)
         return -1; 
     }
 	imshow("source", src);
-///////////////////////////////////////////////////////////////////////////////////
-	/* Example of nlopt*/
-	GradientFilter demo;
-	demo.init(src);
-	Mat shading = demo.optimize();
-	/*Mat shading_8U;
-	shading.convertTo(shading_8U, CV_8UC1, 255);
-	resize(shading_8U, shading_8U, Size(src.cols,src.rows));
-	imshow("shading", shading_8U);*/
 
-/////////////////////////////////////////////////////////////////////////////////////
+	LightingEstimation demo;
+	Mat res = demo.makeShading(src);
+	imshow("shading", res);
 
     waitKey();
 

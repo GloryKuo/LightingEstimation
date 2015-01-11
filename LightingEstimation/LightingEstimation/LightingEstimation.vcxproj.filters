@@ -21,9 +21,15 @@
     <ClCompile Include="GradientFilter.cpp">
       <Filter>原始程式檔</Filter>
     </ClCompile>
+    <ClCompile Include="LightingEstimation.cpp">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GradientFilter.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="LightingEstimation.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
   </ItemGroup>
