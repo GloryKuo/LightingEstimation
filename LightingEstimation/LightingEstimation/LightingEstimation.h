@@ -3,31 +3,21 @@
 
 class LightingEstimation
 {
+public:
 	class Line
 	{
 	public:
 		Line(){}
-		Line(cv::Point2i prior, double coef[2], int imgWidth, int imgHeight){  
-			/* To do */
-			/* 魁瓜い┮Τ翴 */
-		}
-		bool static checkValid(cv::Point2i p, cv::Size2i imgSize){
-			return p.x>=0 && p.y>=0 && p.x<=imgSize.width && p.y<=imgSize.height;
-		}
-		Line& clone(){
-			Line *l = new Line();
-			for(int i=0;i<pt.size();i++){
-				l->pt.push_back(pt[i]);
-			}
-			l->coef[0] = coef[0];
-			l->coef[1] = coef[1];
-			return *l;
-		}
+		void recordPt(cv::Point2i prior, double coef[2], int imgWidth, int imgHeight);
+		bool static checkValidPt(cv::Point2i p, cv::Size2i imgSize);
+		Line& clone();
+		void printLine();
 
-		std::vector<cv::Point2i> pt;
-		double coef[2];        //絬把计Α   x = x0 + coef[0]*t,   y = y0 + coef[1]*t
+		std::vector<cv::Point2i> pts;
+		cv::Point2i _prior;
+		double _coef[2];        //絬把计Α   x = x0 + coef[0]*t,   y = y0 + coef[1]*t
 	};
-public:
+
 	LightingEstimation(void);
 	~LightingEstimation(void);
 	cv::Mat makeShading(cv::Mat src);
