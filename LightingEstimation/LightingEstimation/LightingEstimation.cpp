@@ -4,31 +4,29 @@
 using namespace cv;
 using namespace std;
 
-void LightingEstimation::Line::recordPt(cv::Point2i prior, double coef[2], int imgWidth, int imgHeight){  
-	_prior = prior;
-	_coef[0] = coef[0];
-	_coef[1] = coef[1];
+void LightingEstimation::Line::recordValidPts(int imgWidth, int imgHeight){
 	/* 紀錄在圖片中的所有點 */
-	double t_step = MIN(1/abs(coef[0]), 1/abs(coef[1]));        //最小步長
+	double t_step = MIN(1/abs(_coef[0]), 1/abs(_coef[1]));        //最小步長
 	double t = 0.0;
-	Point2i p = prior;
+	Point2i p = _prior;
 
 	while (checkValidPt( p, Size2i(imgWidth, imgHeight) )){
 		pts.push_back(p);
 		t += t_step;
-		p.x = prior.x + static_cast<int>(ceil(coef[0]*t) );
-		p.y = prior.y + static_cast<int>(ceil(coef[1]*t) );		
+		p.x = _prior.x + static_cast<int>(ceil(_coef[0]*t) );
+		p.y = _prior.y + static_cast<int>(ceil(_coef[1]*t) );		
 	}
 	reverse(pts.begin(), pts.end());
 	t = 0.0;
 	t_step *= -1;
+	p = _prior;
 
 	while (checkValidPt( p, Size2i(imgWidth, imgHeight) )){
 		if(t!=0.0)
 			pts.push_back(p);
 		t += t_step;
-		p.x = prior.x + static_cast<int>(ceil(coef[0]*t) );
-		p.y = prior.y + static_cast<int>(ceil(coef[1]*t) );
+		p.x = _prior.x + static_cast<int>(ceil(_coef[0]*t) );
+		p.y = _prior.y + static_cast<int>(ceil(_coef[1]*t) );
 	}
 }
 
@@ -84,7 +82,7 @@ LightingEstimation::Line LightingEstimation::detectBiSymmetry(Mat shading, Point
 {
 	vector<LightingEstimation::Line> lines;
 	vector<double> dist(lines.size());
-	generateHypotheses(lines, prior);
+	generateHypotheses(lines, prior, shading.cols, shading.rows);
 
 	for(int i=0;i<lines.size();i++){
 		int numValidPt = 0;
@@ -115,13 +113,38 @@ LightingEstimation::Line LightingEstimation::detectBiSymmetry(Mat shading, Point
 	}
 	int *minIdx = NULL;
 	double *minVal = NULL;
-	minMaxIdx(dist, minVal, NULL, minIdx);
+	cv::minMaxIdx(dist, minVal, NULL, minIdx);
 
 	Line symmetryAxis = lines[*minIdx].clone();
 	return symmetryAxis;
 }
 
-void LightingEstimation::generateHypotheses( vector<LightingEstimation::Line> &lines, Point2i prior )
+void LightingEstimation::generateHypotheses( vector<LightingEstimation::Line> &lines, Point2i prior, int imgWidth, int imgHeight )
 {
-	/*To do*/
+	/* 點斜式 y-y0 = m(x-x0) */
+	double m;      //直線斜率
+	const double theta_step = 0.5;    //夾角間隔
+	for(double theta=(-90.0)+theta_step; theta<90.0; theta+=theta_step){
+		m = tan(theta*3.1415926/180);
+		LightingEstimation::Line l;
+		l._coef[0] = 1;
+		l._coef[1] = m;
+		l._prior = prior;
+		lines.push_back(l);
+	}
+	for(int i=0;i<lines.size();i++){
+		lines[i].recordValidPts(imgWidth, imgHeight);
+	}
+}
+
+void LightingEstimation::drawLines(cv::Mat src, cv::Mat &des, std::vector<LightingEstimation::Line> lines)
+{
+	des = Mat(src.rows, src.cols, CV_8UC3);
+	Mat img[3] = {src, src, src};
+	merge(img, 3, des);
+
+	for(int i=0;i<lines.size();i++){
+		for(int j=0;j<lines[i].pts.size();j++)
+			line(des, lines[i].pts[j], lines[i].pts[j], Scalar(0, 0, 200));
+	}
 }

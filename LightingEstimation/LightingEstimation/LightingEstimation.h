@@ -8,7 +8,7 @@ public:
 	{
 	public:
 		Line(){}
-		void recordPt(cv::Point2i prior, double coef[2], int imgWidth, int imgHeight);
+		void recordValidPts(int imgWidth, int imgHeight);
 		bool static checkValidPt(cv::Point2i p, cv::Size2i imgSize);
 		Line& clone();
 		void printLine();
@@ -22,7 +22,7 @@ public:
 	~LightingEstimation(void);
 	cv::Mat makeShading(cv::Mat src);
 	Line detectBiSymmetry(cv::Mat shading, cv::Point2i prior);
-private:
-	void generateHypotheses( std::vector<LightingEstimation::Line> &lines, cv::Point2i prior);
+	void static generateHypotheses( std::vector<LightingEstimation::Line> &lines, cv::Point2i prior, int imgWidth, int imgHeight);
+	void static drawLines( cv::Mat src, cv::Mat &des, std::vector<LightingEstimation::Line> lines);
 };
 
