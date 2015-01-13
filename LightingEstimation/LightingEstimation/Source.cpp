@@ -4,22 +4,22 @@ using namespace cv;
 
 int main(void)
 {
-	Mat src = imread( "../input/input20.jpg", 0);
+	Mat src = imread( "../input/input.jpg", 1);
     if( !src.data ){
 		std::cout<<"Can not load image!"<<std::endl;
         return -1; 
     }
 	imshow("source", src);
-
-	/*LightingEstimation demo;
-	Mat res = demo.makeShading(src);
-	imshow("shading", res);*/
-
-	std::vector<LightingEstimation::Line> lines;
-	LightingEstimation::generateHypotheses(lines, Point2i(500,450), src.cols, src.rows);
-	std::cout<<"num of lines:"<<lines.size()<<std::endl;
-	LightingEstimation::drawLines(src, src, lines);
-	imshow("lines", src);
+	
+	LightingEstimation le;
+	LightingEstimation::Line l = le.detectBiSymmetry(src, Point2i(227,193));
+	
+	std::vector<LightingEstimation::Line> lv;
+	lv.push_back(l);
+	
+	Mat show;
+	LightingEstimation::drawLines(le.getShading(), show, lv);
+	imshow("symmetry axis", show);
 
 
     waitKey();

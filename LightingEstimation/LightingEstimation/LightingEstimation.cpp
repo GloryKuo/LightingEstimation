@@ -31,7 +31,7 @@ void LightingEstimation::Line::recordValidPts(int imgWidth, int imgHeight){
 }
 
 bool LightingEstimation::Line::checkValidPt(cv::Point2i p, cv::Size2i imgSize){
-	return p.x>=0 && p.y>=0 && p.x<=imgSize.width && p.y<=imgSize.height;
+	return p.x>=0 && p.y>=0 && p.x<imgSize.width && p.y<imgSize.height;
 }
 
 LightingEstimation::Line& LightingEstimation::Line::clone()
@@ -42,6 +42,7 @@ LightingEstimation::Line& LightingEstimation::Line::clone()
 	}
 	l->_coef[0] = _coef[0];
 	l->_coef[1] = _coef[1];
+	l->_prior = _prior;
 	return *l;
 }
 
@@ -73,16 +74,20 @@ LightingEstimation::~LightingEstimation(void)
 
 Mat LightingEstimation::makeShading(Mat src)
 {
+	if(src.channels()!=1)
+		cvtColor(src, src, CV_BGR2GRAY);
 	GradientFilter gf;
 	gf.init(src);
 	return gf.optimize();
 }
 
-LightingEstimation::Line LightingEstimation::detectBiSymmetry(Mat shading, Point2i prior)
+LightingEstimation::Line& LightingEstimation::detectBiSymmetry(Mat src, Point2i prior)
 {
+	_shading = makeShading(src);
 	vector<LightingEstimation::Line> lines;
-	vector<double> dist(lines.size());
-	generateHypotheses(lines, prior, shading.cols, shading.rows);
+	vector<double> dist;
+
+	generateHypotheses(lines, prior, _shading.cols, _shading.rows);
 
 	for(int i=0;i<lines.size();i++){
 		int numValidPt = 0;
@@ -94,29 +99,41 @@ LightingEstimation::Line LightingEstimation::detectBiSymmetry(Mat shading, Point
 			double t_step = MIN(1/coef[0], 1/coef[1]);        //最小步長
 
 			Point2i z1 = p, z2 = p;
-			Size imgSize(shading.cols, shading.rows);
-			double d=10000000.0;
+			Size imgSize(_shading.cols, _shading.rows);
+			double d=-1.0;
 			double t=0.0;
+			const double th = 0.0000001;
 			while(Line::checkValidPt(z1, imgSize) && Line::checkValidPt(z2, imgSize)){
-				z1 = Point2i(p.x+coef[0]*t, p.y+coef[1]*t);
-				z2 = Point2i(p.x+coef[0]*(-1*t), p.y+coef[1]*(-1*t));
-				if(shading.at<uchar>(z1) == shading.at<uchar>(z2)){
+				if(t==0.0){
+					t += t_step;
+					z1 = Point2i(p.x+coef[0]*t, p.y+coef[1]*t);
+					z2 = Point2i(p.x+coef[0]*(-1*t), p.y+coef[1]*(-1*t));
+					continue;
+				}
+				if(abs(_shading.at<double>(z1.y, z1.x)-_shading.at<double>(z2.y, z2.x)) < th){
 					d = (z1.x-z2.x)*(z1.x-z2.x) + (z1.y-z2.y)*(z1.y-z2.y);
 					numValidPt++;
 					break;
 				}
 				t += t_step;
+				z1 = Point2i(p.x+coef[0]*t, p.y+coef[1]*t);
+				z2 = Point2i(p.x+coef[0]*(-1*t), p.y+coef[1]*(-1*t));
 			}
-			d_sum += d;
+			if(d != -1.0)
+				d_sum += d;
 		}
-		dist[i] = d_sum / numValidPt;
+		if(numValidPt==0)    /* 若這條線上完全沒有對稱點，就讓dist值超大 */
+			dist.push_back(1000000000.0);
+		else
+			dist.push_back(d_sum / numValidPt);
+		system("cls");
+		cout<<"#lines NO:\t"<<i+1<<"/"<<lines.size()<<endl;
 	}
-	int *minIdx = NULL;
-	double *minVal = NULL;
-	cv::minMaxIdx(dist, minVal, NULL, minIdx);
+	int minIdx[2];
+	double minVal;
+	cv::minMaxIdx(dist, &minVal, NULL, minIdx);
 
-	Line symmetryAxis = lines[*minIdx].clone();
-	return symmetryAxis;
+	return lines[minIdx[1]].clone();
 }
 
 void LightingEstimation::generateHypotheses( vector<LightingEstimation::Line> &lines, Point2i prior, int imgWidth, int imgHeight )
@@ -139,12 +156,24 @@ void LightingEstimation::generateHypotheses( vector<LightingEstimation::Line> &l
 
 void LightingEstimation::drawLines(cv::Mat src, cv::Mat &des, std::vector<LightingEstimation::Line> lines)
 {
-	des = Mat(src.rows, src.cols, CV_8UC3);
-	Mat img[3] = {src, src, src};
-	merge(img, 3, des);
+	if(src.channels()==1){
+		des = Mat(src.rows, src.cols, CV_8UC3);
+		Mat img[3] = {src, src, src};
+		merge(img, 3, des);
+	
+	}
+	else
+		des = src.clone();
 
 	for(int i=0;i<lines.size();i++){
 		for(int j=0;j<lines[i].pts.size();j++)
 			line(des, lines[i].pts[j], lines[i].pts[j], Scalar(0, 0, 200));
 	}
+}
+
+Mat& LightingEstimation::getShading()
+{
+	Mat *output = new Mat();
+	_shading.convertTo(*output, CV_8UC1, 255);
+	return *output;
 }

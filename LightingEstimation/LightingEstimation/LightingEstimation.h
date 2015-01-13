@@ -21,8 +21,11 @@ public:
 	LightingEstimation(void);
 	~LightingEstimation(void);
 	cv::Mat makeShading(cv::Mat src);
-	Line detectBiSymmetry(cv::Mat shading, cv::Point2i prior);
+	Line& detectBiSymmetry(cv::Mat src, cv::Point2i prior);
 	void static generateHypotheses( std::vector<LightingEstimation::Line> &lines, cv::Point2i prior, int imgWidth, int imgHeight);
 	void static drawLines( cv::Mat src, cv::Mat &des, std::vector<LightingEstimation::Line> lines);
+	cv::Mat& getShading();
+private:
+	cv::Mat _shading;
 };
 
