@@ -11,16 +11,17 @@ int main(void)
     }
 	imshow("source", src);
 	
+
 	LightingEstimation le;
-	LightingEstimation::Line l = le.detectBiSymmetry(src, Point2i(227,193));
-	
+	LightingEstimation::Line l = le.detectBiSymmetry(src, Point2i(228,194));
+	l.printLine();
+
 	std::vector<LightingEstimation::Line> lv;
 	lv.push_back(l);
 	
 	Mat show;
 	LightingEstimation::drawLines(le.getShading(), show, lv);
 	imshow("symmetry axis", show);
-
 
     waitKey();
 	return 0;
