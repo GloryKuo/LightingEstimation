@@ -1,10 +1,14 @@
-﻿已經開始建置於 2015/1/10 下午 03:24:07。
+﻿已經開始建置於 2015/1/26 下午 03:12:34。
      1>節點 2 (Build 目標) 上的專案 "E:\GitHub\LightingEstimation\LightingEstimation\LightingEstimation\LightingEstimation.vcxproj"。
-     1>Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"E:\GitHub\LightingEstimation\LightingEstimation\Debug\LightingEstimation.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\opencv\build\x64\vc11\lib opencv_core247d.lib opencv_highgui247d.lib opencv_video247d.lib opencv_ml247d.lib opencv_legacy247d.lib opencv_imgproc247d.lib opencv_features2d247d.lib opencv_objdetect247d.lib opencv_calib3d247d.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:\GitHub\LightingEstimation\LightingEstimation\Debug\LightingEstimation.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:\GitHub\LightingEstimation\LightingEstimation\Debug\LightingEstimation.lib" /MACHINE:X86 Debug\Source.obj
-     1>opencv_highgui247d.lib(opencv_highgui247d.dll) : fatal error LNK1112: 模組電腦類型 'x64' 與目標電腦類型 'X86' 衝突
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /IC:\opencv\build\include /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt GradientFilter.cpp LightingEstimation.cpp
+         LightingEstimation.cpp
+     1>e:\github\lightingestimation\lightingestimation\lightingestimation\gradientfilter.h(4): fatal error C1083: 無法開啟包含檔案: 'nlopt.hpp': No such file or directory
+         GradientFilter.cpp
+     1>e:\github\lightingestimation\lightingestimation\lightingestimation\gradientfilter.h(4): fatal error C1083: 無法開啟包含檔案: 'nlopt.hpp': No such file or directory
+         正在產生程式碼...
      1>專案 "E:\GitHub\LightingEstimation\LightingEstimation\LightingEstimation\LightingEstimation.vcxproj" (Build 目標) 建置完成 -- 失敗。
 
 建置失敗。
 
-經過時間 00:00:00.23
+經過時間 00:00:01.51
