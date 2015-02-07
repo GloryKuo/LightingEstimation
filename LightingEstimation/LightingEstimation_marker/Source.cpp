@@ -34,7 +34,7 @@ static void onMouse( int event, int x, int y, int, void* d )
 
 int main(void)
 {
-	Mat img = imread("../input/input23.jpg");
+	Mat img = imread("../input/input23-.jpg");
 	imshow("img", img);
 
 	onMouseData data;
@@ -48,7 +48,6 @@ int main(void)
 	data.desPts[3] = Point2f( 40.0,  40.0);
 
 	setMouseCallback("img", onMouse, &data);
-
 
 	waitKey();
 	return 0;

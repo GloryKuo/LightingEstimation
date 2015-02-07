@@ -1,0 +1,3 @@
+ambient = 0.015831
+diffuse = 1
+light position = (95.3112, 79.561, 72.3589)

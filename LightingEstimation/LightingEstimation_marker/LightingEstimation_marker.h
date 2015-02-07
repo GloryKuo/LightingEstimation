@@ -2,6 +2,13 @@
 #include "LightingEstimation.h"
 #include "nlopt.hpp"
 
+struct objfunc_data
+{
+	cv::Mat _intensity;
+	double _normal[3];
+	std::vector<cv::Point3f> _pts_world;   //the vertex in world coordinate;
+	std::vector<cv::Point2f> _pts_img;   //the pixel in image coordinate;
+};
 
 typedef class LightingEstimation_marker :
 	public LightingEstimation
@@ -23,6 +30,7 @@ private:
 	~LightingEstimation_marker(void);
 	LightingEstimation_marker(LightingEstimation_marker const&);
 	void operator=(LightingEstimation_marker const&);
+	void setInitGuess(cv::Size imgSize);
 
 	double static objFunc(const std::vector<double> &x, std::vector<double> &grad, void* objFunc_data);
 	double static constraint(const std::vector<double> &x, std::vector<double> &grad, void* cons_data);
@@ -30,5 +38,11 @@ private:
 	cv::Mat _homoMatrix;
 	cv::Mat _img;
 	nlopt::opt *opt;
+
+	/* output */
+	double intensity_ambient;
+	double intensity_diffuse;
+	cv::Point3f light_position;
+
 } LE_marker;
 
