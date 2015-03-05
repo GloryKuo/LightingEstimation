@@ -1,13 +1,12 @@
-﻿已經開始建置於 2015/2/7 下午 04:15:13。
+﻿已經開始建置於 2015/3/5 下午 05:21:23。
      1>節點 2 (Build 目標) 上的專案 "E:\GitHub\LightingEstimation\LightingEstimation\LightingEstimation_marker\LightingEstimation_marker.vcxproj"。
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /IE:\GitHub\LightingEstimation\LightingEstimation\/include /IC:\opencv\build\include /Zi /nologo /W3 /WX- /sdl /Od /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc110.pdb" /Gd /TP /errorReport:prompt LightingEstimation_marker.cpp
-         LightingEstimation_marker.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /IE:\GitHub\LightingEstimation\LightingEstimation\/include /IC:\opencv\build\include /Zi /nologo /W3 /WX- /sdl /Od /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc110.pdb" /Gd /TP /errorReport:prompt Source.cpp
+         Source.cpp
      1>E:\GitHub\LightingEstimation\LightingEstimation\include\nlopt.hpp(414): warning C4267: '引數' : 將 'size_t' 轉換為 'unsigned int'，資料可能遺失
      1>E:\GitHub\LightingEstimation\LightingEstimation\include\nlopt.hpp(443): warning C4267: '引數' : 將 'size_t' 轉換為 'unsigned int'，資料可能遺失
      1>E:\GitHub\LightingEstimation\LightingEstimation\include\nlopt.hpp(473): warning C4267: '引數' : 將 'size_t' 轉換為 'unsigned int'，資料可能遺失
      1>E:\GitHub\LightingEstimation\LightingEstimation\include\nlopt.hpp(483): warning C4267: '引數' : 將 'size_t' 轉換為 'unsigned int'，資料可能遺失
-     1>LightingEstimation_marker.cpp(105): warning C4305: '引數' : 從 'double' 轉換為 'float'，是由較大的型別轉換為較小的型別，可能導致資料遺失
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"E:\GitHub\LightingEstimation\LightingEstimation\x64\Debug\LightingEstimation_marker.exe" /INCREMENTAL /NOLOGO /LIBPATH:E:\GitHub\LightingEstimation\LightingEstimation\/lib /LIBPATH:C:\opencv\build\x64\vc11\lib opencv_core247d.lib opencv_highgui247d.lib opencv_video247d.lib opencv_ml247d.lib opencv_legacy247d.lib opencv_imgproc247d.lib opencv_features2d247d.lib opencv_objdetect247d.lib opencv_calib3d247d.lib nlopt.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:\GitHub\LightingEstimation\LightingEstimation\x64\Debug\LightingEstimation_marker.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:\GitHub\LightingEstimation\LightingEstimation\x64\Debug\LightingEstimation_marker.lib" /MACHINE:X64 x64\Debug\GradientFilter.obj
          x64\Debug\LightingEstimation.obj
@@ -18,4 +17,4 @@
 
 建置成功。
 
-經過時間 00:00:01.62
+經過時間 00:00:01.91

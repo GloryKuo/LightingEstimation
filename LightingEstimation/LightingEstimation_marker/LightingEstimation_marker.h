@@ -21,16 +21,17 @@ public:
 	}
 	void setHomoMatrix(cv::Mat H);
 	void setInputImg(cv::Mat img);
-	bool estimate();
-	bool estimate(cv::Mat img, cv::Mat homography);
-
+	double estimate();
+	double estimate(cv::Mat img, cv::Mat homography);
+	void setInitGuess(double ambient, double diffuse, float x, float y, float z);
+	void outputData(double output[5]);
 
 private:
 	LightingEstimation_marker(void);
 	~LightingEstimation_marker(void);
 	LightingEstimation_marker(LightingEstimation_marker const&);
 	void operator=(LightingEstimation_marker const&);
-	void setInitGuess(cv::Size imgSize);
+	void setInitGuess();
 
 	double static objFunc(const std::vector<double> &x, std::vector<double> &grad, void* objFunc_data);
 	double static constraint(const std::vector<double> &x, std::vector<double> &grad, void* cons_data);
@@ -38,6 +39,7 @@ private:
 	cv::Mat _homoMatrix;
 	cv::Mat _img;
 	nlopt::opt *opt;
+	bool set_initGuess;
 
 	/* output */
 	double intensity_ambient;

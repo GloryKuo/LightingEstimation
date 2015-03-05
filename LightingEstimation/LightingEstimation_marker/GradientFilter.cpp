@@ -22,8 +22,10 @@ bool GradientFilter::init(cv::Mat img)
 		cvtColor(img, img, CV_RGB2GRAY);
 	}
 	imgSize = Size(img.cols, img.rows);
-	if(img.cols>=img.rows)
+	if(img.cols > img.rows)
 		resize(img, img, Size(40,30));
+	else if(img.cols == img.rows)
+		resize(img, img, Size(35,35));
 	else
 		resize(img, img, Size(30,40));
 	img.convertTo(m_inputImg, CV_64FC1, 1/255.0);	  // uint8 to double
