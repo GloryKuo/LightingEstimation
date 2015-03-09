@@ -1,9 +1,11 @@
 #include "LightingEstimation_marker.h"
 #include <fstream>
+#include <time.h>
 using namespace cv;
 using namespace std;
 
 
+float dsFactor = 0.1;        //downsample ratio
 double output[5],cost;
 ofstream fout("output.txt");
 
@@ -22,7 +24,7 @@ static void onMouse( int event, int x, int y, int, void* d )
 		return;
 	
 	if(count<4){
-		data->srcPts[count++] = Point2f((float)x, (float)y);
+		data->srcPts[count++] = Point2f((float)x*dsFactor, (float)y*dsFactor);
 		circle(*(data->img), Point2f((float)x, (float)y), 5, Scalar(0,0,255));
 		imshow("img", *(data->img));
 
@@ -32,8 +34,14 @@ static void onMouse( int event, int x, int y, int, void* d )
 	}
 	if(count==4){
 		count++;
+		resize(*(data->img), *(data->img), Size(data->img->cols*dsFactor, data->img->rows*dsFactor));
 		Mat H = getPerspectiveTransform(data->srcPts, data->desPts);    //find homography
+
+		clock_t start, end;
+		start = clock();
 		cost = LE_marker::getInstance().estimate(*(data->img), H);
+		end = clock();
+		cout<<"excution time:\t"<<(end-start)<<" ms"<<endl;
 		
 		LE_marker::getInstance().outputData(output);
 		fout<<"ambient = "<<output[0]<<endl;
@@ -45,7 +53,7 @@ static void onMouse( int event, int x, int y, int, void* d )
 
 int main(void)
 {
-	string imgPath = "../input/input30.jpg";
+	string imgPath = "../input/input24.jpg";
 	Mat img = imread(imgPath);
 	imshow("img", img);
 	fout<<"name : "<<imgPath<<endl;
@@ -55,7 +63,7 @@ int main(void)
 	data.desPts.resize(4);
 
 	data.img = &img;
-	float half_markerLen = 84.0/2;
+	float half_markerLen = 185.0/2;
 	data.desPts[0] = Point2f(-half_markerLen,  half_markerLen);            //clockwise
 	data.desPts[1] = Point2f(half_markerLen, half_markerLen);
 	data.desPts[2] = Point2f( half_markerLen, -half_markerLen);

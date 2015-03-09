@@ -7,11 +7,11 @@ LightingEstimation_marker::LightingEstimation_marker(){
 	set_initGuess = false;
 
 	double stopPixelVal = 10.0;
-	double stopMaxtime = 300.0;
+	double stopMaxtime = 0.3;
 	opt = new nlopt::opt(nlopt::LN_COBYLA, 5);
 	opt->set_stopval(stopPixelVal);
 	opt->set_maxtime(stopMaxtime);
-	opt->set_ftol_rel(0.001);
+	opt->set_ftol_rel(0.01);
 	vector<double> lb(5), ub(5);
 	lb[0] = 0.0;
 	lb[1] = 0.0;
@@ -127,15 +127,17 @@ double LightingEstimation_marker::objFunc(const std::vector<double> &x, std::vec
 		double Ip = I.at<double>((int)data->_pts_img[i].y, (int)data->_pts_img[i].x);
 		double cost = Ip - x[0] - x[1]*(n.dot(l)/norm(l, NORM_L2));
 		sumCost += cost*cost;
-		/*system("cls");
+#ifdef _LE_DEBUG
+		system("cls");
 		cout<<"progress: "<<i+1<<"/"<<data->_pts_world.size()<<endl;
-		cout<<"cost = "<<cost*cost<<endl;*/
+		cout<<"cost = "<<cost*cost<<endl;
+#endif
 	}	
-	static int itrCnt = 0;
+	/*static int itrCnt = 0;
 	system("cls");
 	cout<<"iteration "<<++itrCnt<<":"<<endl;
 	cout<<"x = ["<<x[0]<<" "<<x[1]<<" "<<x[2]<<" "<<x[3]<<" "<<x[4]<<"]"<<endl;
-	cout<<"sumCost = "<<sumCost<<endl;
+	cout<<"sumCost = "<<sumCost<<endl;*/
 	return sumCost;
 }
 
