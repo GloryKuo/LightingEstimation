@@ -1,5 +1,5 @@
 #pragma once
-#include "LightingEstimation.h"
+#include <opencv2\opencv.hpp>
 #include "nlopt.hpp"
 
 struct objfunc_data
@@ -10,8 +10,7 @@ struct objfunc_data
 	std::vector<cv::Point2f> _pts_img;   //the pixel in image coordinate;
 };
 
-typedef class LightingEstimation_marker :
-	public LightingEstimation
+typedef class LightingEstimation_marker
 {
 public:
 	static LightingEstimation_marker& getInstance()
@@ -32,6 +31,8 @@ private:
 	LightingEstimation_marker(LightingEstimation_marker const&);
 	void operator=(LightingEstimation_marker const&);
 	void setInitGuess();
+	cv::Mat makeShading(cv::Mat src);
+	cv::Mat& getShading();
 
 	double static objFunc(const std::vector<double> &x, std::vector<double> &grad, void* objFunc_data);
 	double static constraint(const std::vector<double> &x, std::vector<double> &grad, void* cons_data);
@@ -40,6 +41,7 @@ private:
 	cv::Mat _img;
 	nlopt::opt *opt;
 	bool set_initGuess;
+	cv::Mat _shading;
 
 	/* output */
 	double intensity_ambient;

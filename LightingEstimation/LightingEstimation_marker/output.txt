@@ -1,6 +1,6 @@
 name : ../input/input24.jpg
 initial guess: [0.1, 0.5, 0, 0, 0]
-ambient = 0.231293
-diffuse = 0.424161
-light position = (-59.7474, -64.498, 9.83879)
-minimum cost = 9.9871
+ambient = 0.213744
+diffuse = 0.521198
+light position = (-76.2765, -39.3171, 10.0321)
+minimum cost = 13.1262

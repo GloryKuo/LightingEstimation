@@ -150,13 +150,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GradientFilter.cpp" />
-    <ClCompile Include="LightingEstimation.cpp" />
     <ClCompile Include="LightingEstimation_marker.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GradientFilter.h" />
-    <ClInclude Include="LightingEstimation.h" />
     <ClInclude Include="LightingEstimation_marker.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

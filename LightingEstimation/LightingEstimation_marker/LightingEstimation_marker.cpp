@@ -1,5 +1,8 @@
 #include "LightingEstimation_marker.h"
-#include <fstream>
+#include "GradientFilter.h"
+/* _LE_DEBUG mode is slower */
+//#define _LE_DEBUG
+
 using namespace cv;
 using namespace std;
 
@@ -127,21 +130,22 @@ double LightingEstimation_marker::objFunc(const std::vector<double> &x, std::vec
 		double Ip = I.at<double>((int)data->_pts_img[i].y, (int)data->_pts_img[i].x);
 		double cost = Ip - x[0] - x[1]*(n.dot(l)/norm(l, NORM_L2));
 		sumCost += cost*cost;
-#ifdef _LE_DEBUG
-		system("cls");
+		/*system("cls");
 		cout<<"progress: "<<i+1<<"/"<<data->_pts_world.size()<<endl;
-		cout<<"cost = "<<cost*cost<<endl;
-#endif
+		cout<<"cost = "<<cost*cost<<endl;*/
 	}	
-	/*static int itrCnt = 0;
+#ifdef _LE_DEBUG
+	static int itrCnt = 0;
 	system("cls");
 	cout<<"iteration "<<++itrCnt<<":"<<endl;
 	cout<<"x = ["<<x[0]<<" "<<x[1]<<" "<<x[2]<<" "<<x[3]<<" "<<x[4]<<"]"<<endl;
-	cout<<"sumCost = "<<sumCost<<endl;*/
+	cout<<"sumCost = "<<sumCost<<endl;
+#endif
 	return sumCost;
 }
 
-double LightingEstimation_marker::constraint(const std::vector<double> &x, std::vector<double> &grad, void* cons_data){
+double LightingEstimation_marker::constraint(const std::vector<double> &x, std::vector<double> &grad, void* cons_data)
+{
 	return 0.0;
 }
 
@@ -152,4 +156,20 @@ void LightingEstimation_marker::outputData(double output[5])
 	output[2] = light_position.x;
 	output[3] = light_position.y;
 	output[4] = light_position.z;
+}
+
+Mat LightingEstimation_marker::makeShading(Mat src)
+{
+	if(src.channels()!=1)
+		cvtColor(src, src, CV_BGR2GRAY);
+	GradientFilter gf;
+	gf.init(src);
+	return gf.optimize();
+}
+
+Mat& LightingEstimation_marker::getShading()
+{
+	Mat *output = new Mat();
+	_shading.convertTo(*output, CV_8UC1, 255);
+	return *output;
 }

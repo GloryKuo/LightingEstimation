@@ -6,7 +6,7 @@ GradientFilter::GradientFilter()
 	lambda = 0.1;
 	tao = 0.5;
 	stopItrCost = 0.01;
-	stopMaxItrCount = 5;
+	stopMaxItrCount = 1;
 	stopPixelVal = 10.0;
 }
 GradientFilter::~GradientFilter()
