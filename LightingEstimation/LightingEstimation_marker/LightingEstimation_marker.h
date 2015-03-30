@@ -1,6 +1,8 @@
 #pragma once
-#include <opencv2\opencv.hpp>
-#include "nlopt.hpp"
+#include <opencv2/opencv.hpp>
+#include "nlopt/nlopt.hpp"
+/* _LE_DEBUG mode is slower */
+//#define _LE_DEBUG
 
 struct objfunc_data
 {
@@ -18,9 +20,12 @@ public:
 		static LightingEstimation_marker instance;
 		return instance;
 	}
+	static void computeHomgraphy(double imgpts[4][2], double objpts[4][2], cv::Mat& outputH);
+
 	void setHomoMatrix(cv::Mat H);
 	void setInputImg(cv::Mat img);
 	double estimate();
+	double estimate(cv::Mat img, double imgpts[4][2], double objpts[4][2]);
 	double estimate(cv::Mat img, cv::Mat homography);
 	void setInitGuess(double ambient, double diffuse, float x, float y, float z);
 	void outputData(double output[5]);
@@ -42,6 +47,7 @@ private:
 	nlopt::opt *opt;
 	bool set_initGuess;
 	cv::Mat _shading;
+	double marker_vertex[4][2];
 
 	/* output */
 	double intensity_ambient;

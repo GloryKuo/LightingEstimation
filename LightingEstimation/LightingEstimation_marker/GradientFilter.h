@@ -1,7 +1,7 @@
 #ifndef GRADIENTFILTER_H
 #define GRADIENTFILTER_H
 #include "opencv2/opencv.hpp"
-#include "nlopt.hpp"
+#include "nlopt/nlopt.hpp"
 
 class ObjFunc_data
 {

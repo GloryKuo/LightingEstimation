@@ -1,7 +1,5 @@
 #include "LightingEstimation_marker.h"
 #include "GradientFilter.h"
-/* _LE_DEBUG mode is slower */
-//#define _LE_DEBUG
 
 using namespace cv;
 using namespace std;
@@ -10,23 +8,23 @@ LightingEstimation_marker::LightingEstimation_marker(){
 	set_initGuess = false;
 
 	double stopPixelVal = 10.0;
-	double stopMaxtime = 0.3;
+	double stopMaxtime = 0.3;    //seconds
 	opt = new nlopt::opt(nlopt::LN_COBYLA, 5);
 	opt->set_stopval(stopPixelVal);
 	opt->set_maxtime(stopMaxtime);
 	opt->set_ftol_rel(0.01);
 	vector<double> lb(5), ub(5);
-	lb[0] = 0.0;
-	lb[1] = 0.0;
-	lb[2] = -500.0;
-	lb[3] = -500.0;
+	lb[0] = 0.5;
+	lb[1] = 0.5;
+	lb[2] = -1000.0;
+	lb[3] = -1000.0;
 	lb[4] = 0.0;
 
-	ub[0] = 0.5;
+	ub[0] = 0.8;
 	ub[1] = 1.0;
-	ub[2] = 500.0;
-	ub[3] = 500.0;
-	ub[4] = 300.0;
+	ub[2] = 1000.0;
+	ub[3] = 1000.0;
+	ub[4] = 500.0;
 	opt->set_lower_bounds(lb);
 	opt->set_upper_bounds(ub);
 
@@ -42,10 +40,18 @@ void LightingEstimation_marker::setHomoMatrix(Mat H){
 
 void LightingEstimation_marker::setInputImg(Mat img){
 	_img = img.clone();
+	//_img = img;
 }
 
 double LightingEstimation_marker::estimate(){
 	return estimate(_img, _homoMatrix);
+}
+
+double LightingEstimation_marker::estimate(cv::Mat img, double imgpts[4][2], double objpts[4][2])
+{
+	cv::Mat H;
+	LE_marker::computeHomgraphy(imgpts, objpts, H);
+	return estimate(img, H);
 }
 
 double LightingEstimation_marker::estimate(cv::Mat img, cv::Mat homography){
@@ -90,7 +96,9 @@ double LightingEstimation_marker::estimate(cv::Mat img, cv::Mat homography){
 
 	opt->set_min_objective(objFunc, &data);
 	nlopt::result result = opt->optimize(x, cost);
+#ifdef _LE_DEBUG
 	cout<<"finish "<<result<<endl;
+#endif
 	intensity_ambient = x[0];
 	intensity_diffuse = x[1];
 	light_position = Point3f((float)x[2], (float)x[3], (float)x[4]);
@@ -101,9 +109,11 @@ double LightingEstimation_marker::estimate(cv::Mat img, cv::Mat homography){
 void LightingEstimation_marker::setInitGuess()
 {
 	if(!set_initGuess)
-		setInitGuess(0.1, 0.5, 0.0f, 0.0f, 0.0f);
+		setInitGuess(0.4, 0.6, 0.0f, 0.0f, 0.0f);
 	else{
+#ifdef _LE_DEBUG
 		cout<<"Use prior guess."<<endl;
+#endif
 	}
 }
 
@@ -122,6 +132,7 @@ double LightingEstimation_marker::objFunc(const std::vector<double> &x, std::vec
 	Mat l(3, 1, CV_64FC1);
 	double sumCost = 0.0;
 
+// TODO: OpenCL
 	for(int i=0;i<data->_pts_world.size();i++){	
 		double *lp = l.ptr<double>(0);
 		lp[0] = x[2] - data->_pts_world[i].x;
@@ -172,4 +183,15 @@ Mat& LightingEstimation_marker::getShading()
 	Mat *output = new Mat();
 	_shading.convertTo(*output, CV_8UC1, 255);
 	return *output;
+}
+
+void LightingEstimation_marker::computeHomgraphy(double imgpts[4][2], double objpts[4][2], cv::Mat& outputH)
+{
+	std::vector<Point2f> srcPts;
+	std::vector<Point2f> desPts;
+	for(int i=0;i<4;i++){
+		srcPts.push_back(Point2f((float)imgpts[i][0], (float)imgpts[i][1]));
+		desPts.push_back(Point2f((float)objpts[i][0], (float)objpts[i][1]));
+	}
+	outputH = getPerspectiveTransform(srcPts, desPts);    //find homography
 }

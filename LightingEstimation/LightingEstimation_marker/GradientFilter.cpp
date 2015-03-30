@@ -71,7 +71,8 @@ Mat GradientFilter::optimize()
 	Mat currentImg = m_inputImg.clone();
 	do{
 		sumCost = 0.0;  
-		for(int i=1;i<m_inputImg.rows-1;i++)
+// TODO: OpenCL
+		for(int i=1;i<m_inputImg.rows-1;i++){
 			for(int j=1;j<m_inputImg.cols-1;j++){
 				std::vector<double> x;
 				x.push_back(currentImg.at<double>(i,j));
@@ -85,15 +86,17 @@ Mat GradientFilter::optimize()
 				currentImg.at<double>(i,j) = x[0];
 				sumCost += cost;
 			}
-
-			std::cout<<"iteration "<<++(data.itrCount)<<": cost = "<<sumCost<<std::endl;
-			/* show progress */
+		}
+#ifdef _LE_DEBUG
+			std::cout<<"iteration "<<(data.itrCount)+1<<": cost = "<<sumCost<<std::endl;
+			* show progress */
 			Mat show;
 			resize(currentImg, show, imgSize);
 			imshow("Current Image", show);
 			waitKey(10);
+#endif
 
-	}while (sumCost>=stopItrCost && data.itrCount < stopMaxItrCount);
+	}while (sumCost>=stopItrCost && ++(data.itrCount) < stopMaxItrCount);
 
 	//Mat residual = abs(m_inputImg - currentImg);
 	//resize(residual, residual, imgSize);
@@ -149,7 +152,9 @@ Mat GradientFilter::gradClipping( Mat gradient, double tao )
 		std::cout<<"The mean of gradient = "<<mean<<std::endl;
 		tao = mean;
 	}
+#ifdef _LE_DEBUG
 	std::cout<<"set tao = "<<tao<<std::endl;
+#endif
 	gradient.convertTo(grad_f, CV_32FC1);
 	threshold(grad_f, grad_Clipped, tao, 1.0, THRESH_TOZERO_INV);   //threshold只能接受uint8 or float
 	grad_Clipped.convertTo(clipped_d, CV_64FC1);
