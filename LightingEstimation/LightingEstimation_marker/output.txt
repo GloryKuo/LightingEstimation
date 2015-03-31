@@ -1,7 +1,7 @@
-name : ../input/input23.jpg
-initial guess: [0.5, 0.5, 0, 0, 0]
-ambient = 0.5
-diffuse = 0.5
-normal = (0, 0, 1)
-light position = (0, 0, 0)
-minimum cost = 19371
+name : ../input/synth_14.jpg
+initial guess: [0, 0.5, 0, 0, 0]
+ambient = 0.167814
+diffuse = 0.638098
+normal = (-0.125274, -0.17835, 0.971888)
+light position = (-203.722, -301.043, 170.329)
+minimum cost = 0.00241641

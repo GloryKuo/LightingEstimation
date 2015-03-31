@@ -63,7 +63,7 @@ static void onMouse( int event, int x, int y, int, void* d )
 
 int main(void)
 {
-	string imgPath = "../input/input23.jpg";
+	string imgPath = "../input/synth_14.jpg";
 	Mat img = imread(imgPath);
 	imshow("img", img);
 	fout<<"name : "<<imgPath<<endl;
@@ -73,23 +73,55 @@ int main(void)
 	data.desPts.resize(4);
 
 	data.img = &img;
-	float half_markerLen = 185.0/2;
-	data.desPts[0] = Point2f(-half_markerLen,  half_markerLen);            //clockwise
-	data.desPts[1] = Point2f(half_markerLen, half_markerLen);
-	data.desPts[2] = Point2f( half_markerLen, -half_markerLen);
-	data.desPts[3] = Point2f( -half_markerLen,  -half_markerLen);
+	//float half_markerLen = 185.0/2;
+	//data.desPts[0] = Point2f(-half_markerLen,  half_markerLen);            //clockwise
+	//data.desPts[1] = Point2f(half_markerLen, half_markerLen);
+	//data.desPts[2] = Point2f( half_markerLen, -half_markerLen);
+	//data.desPts[3] = Point2f( -half_markerLen,  -half_markerLen);
 
-	//data.desPts[0] = Point2f(-20.0f, 20.0f);            //clockwise
-	//data.desPts[1] = Point2f(20.0f, 20.0f);
-	//data.desPts[2] = Point2f(20.0f, -20.0f);
-	//data.desPts[3] = Point2f(-20.0f,  -20.0f);
+	double w = img.cols, h = img.rows;
+	data.srcPts[0] = Point2f(0.0f, 0.0f);
+	data.srcPts[1] = Point2f(w, 0.0f);
+	data.srcPts[2] = Point2f(w, h);
+	data.srcPts[3] = Point2f(0.0f, h);
 
-	double initGuess[] = {0.5, 0.5, 0.0, 0.0, 0.0};
+	data.desPts[0] = Point2f(-(w/2), (h/2));
+	data.desPts[1] = Point2f((w/2), (h/2));
+	data.desPts[2] = Point2f((w/2), -(h/2));
+	data.desPts[3] = Point2f(-(w/2), -(h/2));
+	
+	onMouseData *ptr = &data;
+	resize(*(ptr->img), *(ptr->img), Size((int)(ptr->img->cols*dsFactor), (int)(ptr->img->rows*dsFactor)));
+	Mat H = getPerspectiveTransform(data.srcPts, data.desPts);    //find homography
+
+	double initGuess[] = {0.0, 0.5, 0.0, 0.0, 0.0};
 	LE_marker::getInstance().setInitGuess(initGuess[0], initGuess[1], (float)initGuess[2], (float)initGuess[3], (float)initGuess[4]);
 	fout<<"initial guess: ["<<initGuess[0]<<", "<<initGuess[1]<<", ";
 	fout<<initGuess[2]<<", "<<initGuess[3]<<", "<<initGuess[4]<<"]"<<endl;
 
-	setMouseCallback("img", onMouse, &data);
+	clock_t start, end;
+	start = clock();
+	cost = LE_marker::getInstance().estimate(*(ptr->img), H);
+	end = clock();
+	cout<<"excution time:\t"<<(end-start)<<" ms"<<endl;
+		
+	LE_marker::getInstance().outputData(output);
+	fout<<"ambient = "<<output[0]<<endl;
+	fout<<"diffuse = "<<output[1]<<endl;
+	fout<<"normal = ("<<output[2]<<", "<<output[3]<<", "<<output[4]<<")"<<endl;
+	fout<<"light position = ("<<output[5]<<", "<<output[6]<<", "<<output[7]<<")"<<endl;
+	fout<<"minimum cost = "<<cost<<endl;
+
+	cout<<"\nFinished!"<<endl;
+	cout<<"================================="<<endl;
+	cout<<"ambient = "<<output[0]<<endl;
+	cout<<"diffuse = "<<output[1]<<endl;
+	cout<<"normal = ("<<output[2]<<", "<<output[3]<<", "<<output[4]<<")"<<endl;
+	cout<<"light position = ("<<output[5]<<", "<<output[6]<<", "<<output[7]<<")"<<endl;
+	cout<<"minimum cost = "<<cost<<endl;
+
+
+	//setMouseCallback("img", onMouse, &data);
 
 	waitKey();
 	fout.close();

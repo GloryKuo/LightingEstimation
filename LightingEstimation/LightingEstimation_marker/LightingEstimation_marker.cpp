@@ -11,15 +11,15 @@ LightingEstimation_marker::LightingEstimation_marker()
 	_normal[1] = 0.0;
 	_normal[2] = 1.0;
 	
-	const double stopPixelVal = 10.0;
-	const double stopMaxtime = 5;    //seconds
+	const double stopPixelVal = 0.0001;
+	const double stopMaxtime = 120;    //seconds
 	const int para_dimention = 8;     //number of paramter to optimize
 	opt = new nlopt::opt(nlopt::LN_COBYLA, para_dimention);
 	opt->set_stopval(stopPixelVal);
 	opt->set_maxtime(stopMaxtime);
 	opt->set_ftol_rel(0.01);
 	vector<double> lb(8), ub(8);
-	lb[0] = 0.5;
+	lb[0] = 0.0;
 	lb[1] = 0.5;
 	lb[2] = -1.0;
 	lb[3] = -1.0;
@@ -28,7 +28,7 @@ LightingEstimation_marker::LightingEstimation_marker()
 	lb[6] = -1000.0;
 	lb[7] = 0.0;
 
-	ub[0] = 0.8;
+	ub[0] = 0.5;
 	ub[1] = 1.0;
 	ub[2] = 1.0;
 	ub[3] = 1.0;
@@ -89,8 +89,9 @@ double LightingEstimation_marker::estimate(cv::Mat img, cv::Mat homography)
 		}
 	perspectiveTransform(imgPts, worldPts_, homography);
 		
-	for(int i=0;i<worldPts_.size();i++)
+	for(int i=0;i<worldPts_.size();i++){
 		worldPts.push_back(Point3f(worldPts_[i].x, worldPts_[i].y, 0));   //Assume only simple plane, let all z=0.
+	}
 
 	/////* optmization */////////////////////////////////////////////////////
 	setInitGuess();
@@ -160,10 +161,12 @@ double LightingEstimation_marker::objFunc(const std::vector<double> &x, std::vec
 
 // TODO: OpenCL
 	for(int i=0;i<data->_pts_world.size();i++){	
+		double Zp = (x[2]*data->_pts_world[i].x + x[3]*data->_pts_world[i].y)/(-x[4]);
+
 		double *lp = l.ptr<double>(0);
 		lp[0] = x[5] - data->_pts_world[i].x;
 		lp[1] = x[6] - data->_pts_world[i].y;
-		lp[2] = x[7] - data->_pts_world[i].z;	
+		lp[2] = x[7] - Zp;	
 		double nl = norm(l, NORM_L2);
 		l /= nl;
 
@@ -182,9 +185,9 @@ double LightingEstimation_marker::objFunc(const std::vector<double> &x, std::vec
 	for(int i=0;i<7;i++)
 		cout<<x[i]<<" ";
 	cout<<x[7]<<"]"<<endl;
-	cout<<"sumCost = "<<sumCost<<endl;
+	cout<<"cost = "<<sumCost/data->_pts_world.size()<<endl;
 #endif
-	return sumCost;
+	return sumCost/data->_pts_world.size();
 }
 
 double LightingEstimation_marker::constraint(const std::vector<double> &x, std::vector<double> &grad, void* cons_data)
