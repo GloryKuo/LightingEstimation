@@ -4,46 +4,61 @@
 using namespace cv;
 using namespace std;
 
-LightingEstimation_marker::LightingEstimation_marker(){
+LightingEstimation_marker::LightingEstimation_marker()
+{
 	set_initGuess = false;
-
-	double stopPixelVal = 10.0;
-	double stopMaxtime = 0.3;    //seconds
-	opt = new nlopt::opt(nlopt::LN_COBYLA, 5);
+	_normal[0] = 0.0;      //normal initial guess n=(0, 0, 1)
+	_normal[1] = 0.0;
+	_normal[2] = 1.0;
+	
+	const double stopPixelVal = 10.0;
+	const double stopMaxtime = 5;    //seconds
+	const int para_dimention = 8;     //number of paramter to optimize
+	opt = new nlopt::opt(nlopt::LN_COBYLA, para_dimention);
 	opt->set_stopval(stopPixelVal);
 	opt->set_maxtime(stopMaxtime);
 	opt->set_ftol_rel(0.01);
-	vector<double> lb(5), ub(5);
+	vector<double> lb(8), ub(8);
 	lb[0] = 0.5;
 	lb[1] = 0.5;
-	lb[2] = -1000.0;
-	lb[3] = -1000.0;
+	lb[2] = -1.0;
+	lb[3] = -1.0;
 	lb[4] = 0.0;
+	lb[5] = -1000.0;
+	lb[6] = -1000.0;
+	lb[7] = 0.0;
 
 	ub[0] = 0.8;
 	ub[1] = 1.0;
-	ub[2] = 1000.0;
-	ub[3] = 1000.0;
-	ub[4] = 500.0;
+	ub[2] = 1.0;
+	ub[3] = 1.0;
+	ub[4] = 1.0;
+	ub[5] = 1000.0;
+	ub[6] = 1000.0;
+	ub[7] = 500.0;
 	opt->set_lower_bounds(lb);
 	opt->set_upper_bounds(ub);
 
 }
 
-LightingEstimation_marker::~LightingEstimation_marker(){
+LightingEstimation_marker::~LightingEstimation_marker()
+{
 	delete opt;
 }
 
-void LightingEstimation_marker::setHomoMatrix(Mat H){
+void LightingEstimation_marker::setHomoMatrix(Mat H)
+{
 	_homoMatrix = H.clone();
 }
 
-void LightingEstimation_marker::setInputImg(Mat img){
+void LightingEstimation_marker::setInputImg(Mat img)
+{
 	_img = img.clone();
 	//_img = img;
 }
 
-double LightingEstimation_marker::estimate(){
+double LightingEstimation_marker::estimate()
+{
 	return estimate(_img, _homoMatrix);
 }
 
@@ -54,12 +69,12 @@ double LightingEstimation_marker::estimate(cv::Mat img, double imgpts[4][2], dou
 	return estimate(img, H);
 }
 
-double LightingEstimation_marker::estimate(cv::Mat img, cv::Mat homography){
+double LightingEstimation_marker::estimate(cv::Mat img, cv::Mat homography)
+{
 
 	/////* setup */////////////////////////////////////////////////////
 	Mat shading = makeShading(img);
 	//imshow("shading", shading);
-	double normal[3] = {0.0, 0.0, 1.0};           //Assume only simple plane, all normal=0.
 	vector<Point2f> imgPts, worldPts_;
 	vector<Point3f> worldPts;
 	imgPts.reserve(shading.rows*shading.cols);
@@ -81,27 +96,30 @@ double LightingEstimation_marker::estimate(cv::Mat img, cv::Mat homography){
 	setInitGuess();
 	objfunc_data data;
 	data._intensity = shading;
-	for(int j=0;j<3;j++)
-		data._normal[j] = normal[j];
 	data._pts_world = worldPts;
 	data._pts_img = imgPts;
 
 	double cost = 0.0;
 	vector<double> x;
-	x.push_back(intensity_ambient);
-	x.push_back(intensity_diffuse);
-	x.push_back(light_position.x);
-	x.push_back(light_position.y);
-	x.push_back(light_position.z);
+	x.push_back(_ambient);
+	x.push_back(_diffuse);
+	x.push_back(_normal[0]);
+	x.push_back(_normal[1]);
+	x.push_back(_normal[2]);
+	x.push_back(_lightPos.x);
+	x.push_back(_lightPos.y);
+	x.push_back(_lightPos.z);
 
 	opt->set_min_objective(objFunc, &data);
 	nlopt::result result = opt->optimize(x, cost);
 #ifdef _LE_DEBUG
 	cout<<"finish "<<result<<endl;
 #endif
-	intensity_ambient = x[0];
-	intensity_diffuse = x[1];
-	light_position = Point3f((float)x[2], (float)x[3], (float)x[4]);
+	_ambient = x[0];
+	_diffuse = x[1];
+	for(int i=0;i<3;i++)
+		_normal[i] = x[i+2];
+	_lightPos = Point3f((float)x[5], (float)x[6], (float)x[7]);
 
 	return cost;
 }
@@ -120,26 +138,37 @@ void LightingEstimation_marker::setInitGuess()
 void LightingEstimation_marker::setInitGuess(double ambient, double diffuse, float x, float y, float z)
 {
 	set_initGuess = true;
-	intensity_ambient = ambient;
-	intensity_diffuse = diffuse;
-	light_position = Point3f(x, y, z);        //單位mm
+	_ambient = ambient;
+	_diffuse = diffuse;
+	_lightPos = Point3f(x, y, z);        //單位mm
 }
 
-double LightingEstimation_marker::objFunc(const std::vector<double> &x, std::vector<double> &grad, void* objFunc_data){
+double LightingEstimation_marker::objFunc(const std::vector<double> &x, std::vector<double> &grad, void* objFunc_data)
+{
+	/* x := {ambient, diffuse, nx, ny, nz, lx, ly, lz} */
+
 	objfunc_data *data =  reinterpret_cast<objfunc_data*>(objFunc_data);
 	Mat I = data->_intensity;
-	Mat n(3, 1, CV_64FC1, &(data->_normal));	
+	Mat n(3, 1, CV_64FC1);	
 	Mat l(3, 1, CV_64FC1);
 	double sumCost = 0.0;
+
+	for(int i=0;i<3;i++)
+		n.at<double>(i) = x[i+2];
+	double nn = norm(n, NORM_L2);
+	n /= nn;      // normalize to unit vector
 
 // TODO: OpenCL
 	for(int i=0;i<data->_pts_world.size();i++){	
 		double *lp = l.ptr<double>(0);
-		lp[0] = x[2] - data->_pts_world[i].x;
-		lp[1] = x[3] - data->_pts_world[i].y;
-		lp[2] = x[4] - data->_pts_world[i].z;	
+		lp[0] = x[5] - data->_pts_world[i].x;
+		lp[1] = x[6] - data->_pts_world[i].y;
+		lp[2] = x[7] - data->_pts_world[i].z;	
+		double nl = norm(l, NORM_L2);
+		l /= nl;
+
 		double Ip = I.at<double>((int)data->_pts_img[i].y, (int)data->_pts_img[i].x);
-		double cost = Ip - x[0] - x[1]*(n.dot(l)/norm(l, NORM_L2));
+		double cost = Ip - x[0] - x[1]*(n.dot(l));
 		sumCost += cost*cost;
 		/*system("cls");
 		cout<<"progress: "<<i+1<<"/"<<data->_pts_world.size()<<endl;
@@ -149,7 +178,10 @@ double LightingEstimation_marker::objFunc(const std::vector<double> &x, std::vec
 	static int itrCnt = 0;
 	system("cls");
 	cout<<"iteration "<<++itrCnt<<":"<<endl;
-	cout<<"x = ["<<x[0]<<" "<<x[1]<<" "<<x[2]<<" "<<x[3]<<" "<<x[4]<<"]"<<endl;
+	cout<<"x = [";
+	for(int i=0;i<7;i++)
+		cout<<x[i]<<" ";
+	cout<<x[7]<<"]"<<endl;
 	cout<<"sumCost = "<<sumCost<<endl;
 #endif
 	return sumCost;
@@ -160,13 +192,16 @@ double LightingEstimation_marker::constraint(const std::vector<double> &x, std::
 	return 0.0;
 }
 
-void LightingEstimation_marker::outputData(double output[5])
+void LightingEstimation_marker::outputData(double output[8])
 {
-	output[0] = intensity_ambient;
-	output[1] = intensity_diffuse;
-	output[2] = light_position.x;
-	output[3] = light_position.y;
-	output[4] = light_position.z;
+	output[0] = _ambient;
+	output[1] = _diffuse;
+	output[2] = _normal[0];
+	output[3] = _normal[1];
+	output[4] = _normal[2];
+	output[5] = _lightPos.x;
+	output[6] = _lightPos.y;
+	output[7] = _lightPos.z;
 }
 
 Mat LightingEstimation_marker::makeShading(Mat src)

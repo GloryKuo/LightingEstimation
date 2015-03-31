@@ -5,8 +5,8 @@ using namespace cv;
 using namespace std;
 
 
-float dsFactor = 0.1;        //downsample ratio
-double output[5],cost;
+float dsFactor = 1.0f;        //downsample ratio
+double output[8],cost;
 ofstream fout("output.txt");
 
 struct onMouseData
@@ -34,7 +34,7 @@ static void onMouse( int event, int x, int y, int, void* d )
 	}
 	if(count==4){
 		count++;
-		resize(*(data->img), *(data->img), Size(data->img->cols*dsFactor, data->img->rows*dsFactor));
+		resize(*(data->img), *(data->img), Size((int)(data->img->cols*dsFactor), (int)(data->img->rows*dsFactor)));
 		Mat H = getPerspectiveTransform(data->srcPts, data->desPts);    //find homography
 
 		clock_t start, end;
@@ -46,14 +46,24 @@ static void onMouse( int event, int x, int y, int, void* d )
 		LE_marker::getInstance().outputData(output);
 		fout<<"ambient = "<<output[0]<<endl;
 		fout<<"diffuse = "<<output[1]<<endl;
-		fout<<"light position = ("<<output[2]<<", "<<output[3]<<", "<<output[4]<<")"<<endl;
+		fout<<"normal = ("<<output[2]<<", "<<output[3]<<", "<<output[4]<<")"<<endl;
+		fout<<"light position = ("<<output[5]<<", "<<output[6]<<", "<<output[7]<<")"<<endl;
 		fout<<"minimum cost = "<<cost<<endl;
+
+		system("cls");
+		cout<<"Finished!"<<endl;
+		cout<<"================================="<<endl;
+		cout<<"ambient = "<<output[0]<<endl;
+		cout<<"diffuse = "<<output[1]<<endl;
+		cout<<"normal = ("<<output[2]<<", "<<output[3]<<", "<<output[4]<<")"<<endl;
+		cout<<"light position = ("<<output[5]<<", "<<output[6]<<", "<<output[7]<<")"<<endl;
+		cout<<"minimum cost = "<<cost<<endl;
 	}
 }
 
 int main(void)
 {
-	string imgPath = "../input/input24.jpg";
+	string imgPath = "../input/input23.jpg";
 	Mat img = imread(imgPath);
 	imshow("img", img);
 	fout<<"name : "<<imgPath<<endl;
@@ -74,7 +84,7 @@ int main(void)
 	//data.desPts[2] = Point2f(20.0f, -20.0f);
 	//data.desPts[3] = Point2f(-20.0f,  -20.0f);
 
-	double initGuess[] = {0.1, 0.5, 0.0, 0.0, 0.0};
+	double initGuess[] = {0.5, 0.5, 0.0, 0.0, 0.0};
 	LE_marker::getInstance().setInitGuess(initGuess[0], initGuess[1], (float)initGuess[2], (float)initGuess[3], (float)initGuess[4]);
 	fout<<"initial guess: ["<<initGuess[0]<<", "<<initGuess[1]<<", ";
 	fout<<initGuess[2]<<", "<<initGuess[3]<<", "<<initGuess[4]<<"]"<<endl;

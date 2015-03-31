@@ -1,4 +1,5 @@
 #include "GradientFilter.h"
+#define _LE_DEBUG
 using namespace cv;
 
 GradientFilter::GradientFilter()
@@ -89,7 +90,7 @@ Mat GradientFilter::optimize()
 		}
 #ifdef _LE_DEBUG
 			std::cout<<"iteration "<<(data.itrCount)+1<<": cost = "<<sumCost<<std::endl;
-			* show progress */
+			/* show progress */
 			Mat show;
 			resize(currentImg, show, imgSize);
 			imshow("Current Image", show);

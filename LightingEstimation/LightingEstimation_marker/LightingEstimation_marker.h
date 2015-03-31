@@ -2,12 +2,12 @@
 #include <opencv2/opencv.hpp>
 #include "nlopt/nlopt.hpp"
 /* _LE_DEBUG mode is slower */
-//#define _LE_DEBUG
+#define _LE_DEBUG
 
-struct objfunc_data
+class objfunc_data
 {
+public:
 	cv::Mat _intensity;
-	double _normal[3];
 	std::vector<cv::Point3f> _pts_world;   //the vertex in world coordinate;
 	std::vector<cv::Point2f> _pts_img;   //the pixel in image coordinate;
 };
@@ -50,9 +50,10 @@ private:
 	double marker_vertex[4][2];
 
 	/* output */
-	double intensity_ambient;
-	double intensity_diffuse;
-	cv::Point3f light_position;
+	double _ambient;
+	double _diffuse;
+	double _normal[3];
+	cv::Point3f _lightPos;
 
 } LE_marker;
 
