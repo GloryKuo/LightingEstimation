@@ -17,7 +17,7 @@ LightingEstimation_marker::LightingEstimation_marker()
 	opt = new nlopt::opt(nlopt::LN_COBYLA, para_dimention);
 	opt->set_stopval(stopPixelVal);
 	opt->set_maxtime(stopMaxtime);
-	opt->set_ftol_rel(0.01);
+	opt->set_ftol_rel(0.001);
 	vector<double> lb(8), ub(8);
 	lb[0] = 0.0;
 	lb[1] = 0.5;
@@ -118,8 +118,14 @@ double LightingEstimation_marker::estimate(cv::Mat img, cv::Mat homography)
 #endif
 	_ambient = x[0];
 	_diffuse = x[1];
+
+	Mat n(3, 1, CV_64FC1);
 	for(int i=0;i<3;i++)
-		_normal[i] = x[i+2];
+		n.at<double>(i) = x[i+2];
+	double nn = norm(n, NORM_L2);
+	n /= nn;      // normalize to unit vector
+	for(int i=0;i<3;i++)
+		_normal[i] = n.at<double>(i);
 	_lightPos = Point3f((float)x[5], (float)x[6], (float)x[7]);
 
 	return cost;
@@ -157,7 +163,8 @@ double LightingEstimation_marker::objFunc(const std::vector<double> &x, std::vec
 	for(int i=0;i<3;i++)
 		n.at<double>(i) = x[i+2];
 	double nn = norm(n, NORM_L2);
-	n /= nn;      // normalize to unit vector
+	for(int i=0;i<3;i++)
+		n /= nn;      // normalize to unit vector
 
 // TODO: OpenCL
 	for(int i=0;i<data->_pts_world.size();i++){	
