@@ -1,2 +1,2 @@
-name : ../input/synth_17.jpg
-initial guess: [0.15, 0.6, -25, -25, 5]
+name : ../input/synth_19.jpg
+initial guess: [0.15, 0.6, 0, 0, 1, 0, 0, 5]

@@ -12,20 +12,20 @@ LightingEstimation_marker::LightingEstimation_marker()
 	_normal[2] = 1.0;
 	
 	const double stopPixelVal = 0.0001;
-	const double stopMaxtime = 120;    //seconds
+	const double stopMaxtime = 1800;    //seconds
 	const int para_dimention = 8;     //number of paramter to optimize
 	opt = new nlopt::opt(nlopt::LN_COBYLA, para_dimention);
 	opt->set_stopval(stopPixelVal);
 	opt->set_maxtime(stopMaxtime);
-	opt->set_ftol_rel(0.001);
+	opt->set_ftol_rel(0.000001);
 	vector<double> lb(8), ub(8);
 	lb[0] = 0.0;
 	lb[1] = 0.5;
 	lb[2] = -1.0;
 	lb[3] = -1.0;
 	lb[4] = 0.0;
-	lb[5] = -1000.0;
-	lb[6] = -1000.0;
+	lb[5] = -100.0;
+	lb[6] = -100.0;
 	lb[7] = 0.0;
 
 	ub[0] = 0.5;
@@ -33,9 +33,9 @@ LightingEstimation_marker::LightingEstimation_marker()
 	ub[2] = 1.0;
 	ub[3] = 1.0;
 	ub[4] = 1.0;
-	ub[5] = 1000.0;
-	ub[6] = 1000.0;
-	ub[7] = 500.0;
+	ub[5] = 100.0;
+	ub[6] = 100.0;
+	ub[7] = 50.0;
 	opt->set_lower_bounds(lb);
 	opt->set_upper_bounds(ub);
 
@@ -114,7 +114,7 @@ double LightingEstimation_marker::estimate(cv::Mat img, cv::Mat homography)
 	opt->set_min_objective(objFunc, &data);
 	nlopt::result result = opt->optimize(x, cost);
 #ifdef _LE_DEBUG
-	cout<<"finish "<<result<<endl;
+	std::cout<<"finish "<<result<<endl;
 #endif
 	_ambient = x[0];
 	_diffuse = x[1];
@@ -126,7 +126,7 @@ double LightingEstimation_marker::estimate(cv::Mat img, cv::Mat homography)
 	n /= nn;      // normalize to unit vector
 	for(int i=0;i<3;i++)
 		_normal[i] = n.at<double>(i);
-	_lightPos = Point3f((float)x[5], (float)x[6], (float)x[7]);
+	_lightPos = Point3d(x[5], x[6], x[7]);
 
 	return cost;
 }
@@ -134,20 +134,25 @@ double LightingEstimation_marker::estimate(cv::Mat img, cv::Mat homography)
 void LightingEstimation_marker::setInitGuess()
 {
 	if(!set_initGuess)
-		setInitGuess(0.4, 0.6, 0.0f, 0.0f, 0.0f);
+		setInitGuess(0.4, 0.6, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
 	else{
 #ifdef _LE_DEBUG
-		cout<<"Use prior guess."<<endl;
+		std::cout<<"Use prior guess."<<endl;
 #endif
 	}
 }
 
-void LightingEstimation_marker::setInitGuess(double ambient, double diffuse, float x, float y, float z)
+void LightingEstimation_marker::setInitGuess(double ambient, double diffuse,
+											 double n_x, double n_y, double n_z,
+											 double x, double y, double z)
 {
 	set_initGuess = true;
 	_ambient = ambient;
 	_diffuse = diffuse;
-	_lightPos = Point3f(x, y, z);        //單位mm
+	_normal[0] = n_x;
+	_normal[1] = n_y;
+	_normal[2] = n_z;
+	_lightPos = Point3d(x, y, z);        //單位mm
 }
 
 double LightingEstimation_marker::objFunc(const std::vector<double> &x, std::vector<double> &grad, void* objFunc_data)

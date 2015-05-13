@@ -1,5 +1,5 @@
 #include "GradientFilter.h"
-#define _LE_DEBUG
+//#define _LE_DEBUG
 using namespace cv;
 
 GradientFilter::GradientFilter()

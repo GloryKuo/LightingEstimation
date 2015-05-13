@@ -27,7 +27,7 @@ public:
 	double estimate();
 	double estimate(cv::Mat img, double imgpts[4][2], double objpts[4][2]);
 	double estimate(cv::Mat img, cv::Mat homography);
-	void setInitGuess(double ambient, double diffuse, float x, float y, float z);
+	void setInitGuess(double ambient, double diffuse, double n_x, double n_y, double n_z, double x, double y, double z);
 	void outputData(double output[5]);
 
 private:
@@ -53,7 +53,7 @@ private:
 	double _ambient;
 	double _diffuse;
 	double _normal[3];
-	cv::Point3f _lightPos;
+	cv::Point3d _lightPos;
 
 } LE_marker;
 

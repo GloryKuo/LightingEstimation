@@ -7,7 +7,7 @@ using namespace std;
 
 float dsFactor = 1.0f;        //downsample ratio
 double output[8],cost;
-ofstream fout("output.txt");
+ofstream fout;
 
 struct onMouseData
 {
@@ -34,6 +34,7 @@ static void onMouse( int event, int x, int y, int, void* d )
 		std::cout<<std::endl;
 	}
 	if(count==4){
+		destroyWindow("img");
 		count++;
 		resize(*(data->img), *(data->img), Size((int)(data->img->cols*dsFactor), (int)(data->img->rows*dsFactor)));
 		Mat H = getPerspectiveTransform(data->srcPts, data->desPts);    //find homography
@@ -42,7 +43,7 @@ static void onMouse( int event, int x, int y, int, void* d )
 		start = clock();
 		cost = LE_marker::getInstance().estimate(*(data->img), H);
 		end = clock();
-		cout<<"excution time:\t"<<(end-start)<<" ms"<<endl;
+		cout<<"execution time:\t"<<(end-start)<<" ms"<<endl;
 		
 		LE_marker::getInstance().outputData(output);
 		fout<<"ambient = "<<output[0]<<endl;
@@ -50,9 +51,12 @@ static void onMouse( int event, int x, int y, int, void* d )
 		fout<<"normal = ("<<output[2]<<", "<<output[3]<<", "<<output[4]<<")"<<endl;
 		fout<<"light position = ("<<output[5]<<", "<<output[6]<<", "<<output[7]<<")"<<endl;
 		fout<<"minimum cost = "<<cost<<endl;
+		fout<<"================================="<<endl;
+		fout<<"execution time:\t"<<static_cast<float>(end-start)/1000.0f<<" s"<<endl;
 
 		system("cls");
 		cout<<"Finished!"<<endl;
+		cout<<"execution time:\t"<<static_cast<float>(end-start)/1000.0f<<" s"<<endl;
 		cout<<"================================="<<endl;
 		cout<<"ambient = "<<output[0]<<endl;
 		cout<<"diffuse = "<<output[1]<<endl;
@@ -62,11 +66,19 @@ static void onMouse( int event, int x, int y, int, void* d )
 	}
 }
 
-int main(void)
+int main(int argc, char* argv[])
 {
-	string imgPath = "../input/synth_17.jpg";
+	/*
+		參數argv[1] input檔案路徑
+		   argv[2] output檔案名
+	*/
+
+
+	string imgPath(argv[1]);
 	Mat img = imread(imgPath);
 	imshow("img", img);
+
+	fout.open(argv[2]);
 	fout<<"name : "<<imgPath<<endl;
 
 	onMouseData data;
@@ -74,11 +86,14 @@ int main(void)
 	data.desPts.resize(4);
 
 	data.img = &img;
+
+	/*手點*/
 	float half_markerLen = 20.0/2;
 	data.desPts[0] = Point2f(-half_markerLen,  half_markerLen);            //clockwise
 	data.desPts[1] = Point2f(half_markerLen, half_markerLen);
 	data.desPts[2] = Point2f( half_markerLen, -half_markerLen);
 	data.desPts[3] = Point2f( -half_markerLen,  -half_markerLen);
+	/***/
 
 	//double w = img.cols, h = img.rows;
 	//data.srcPts[0] = Point2f(0.0f, 0.0f);
@@ -95,18 +110,34 @@ int main(void)
 	//resize(*(ptr->img), *(ptr->img), Size((int)(ptr->img->cols*dsFactor), (int)(ptr->img->rows*dsFactor)));
 	//Mat H = getPerspectiveTransform(data.srcPts, data.desPts);    //find homography
 
-	double initGuess[] = {0.15, 0.6, -25.0, -25.0, 5.0};
-	LE_marker::getInstance().setInitGuess(initGuess[0], initGuess[1], (float)initGuess[2], (float)initGuess[3], (float)initGuess[4]);
-	fout<<"initial guess: ["<<initGuess[0]<<", "<<initGuess[1]<<", ";
-	fout<<initGuess[2]<<", "<<initGuess[3]<<", "<<initGuess[4]<<"]"<<endl;
+	if(argc > 3){
+		double initGuess[8];
+		for(int i=0;i<8;i++)
+			initGuess[i] = atof(argv[i+3]);
+		LE_marker::getInstance().setInitGuess(initGuess[0], initGuess[1],
+			initGuess[2], initGuess[3], initGuess[4],
+			initGuess[5], initGuess[6], initGuess[7]);
+		fout<<"initial guess: ["<<initGuess[0]<<", "<<initGuess[1]<<", ";
+		fout<<initGuess[2]<<", "<<initGuess[3]<<", "<<initGuess[4]<<", ";
+		fout<<initGuess[5]<<", "<<initGuess[6]<<", "<<initGuess[7]<<"]"<<endl;
+	}
+	else{
+		double initGuess[] = {0.15, 0.6, 0.0, 0.0, 1.0, 0.0, 0.0, 5.0};
+		LE_marker::getInstance().setInitGuess(initGuess[0], initGuess[1],
+			initGuess[2], initGuess[3], initGuess[4],
+			initGuess[5], initGuess[6], initGuess[7]);
+		fout<<"initial guess: ["<<initGuess[0]<<", "<<initGuess[1]<<", ";
+		fout<<initGuess[2]<<", "<<initGuess[3]<<", "<<initGuess[4]<<", ";
+		fout<<initGuess[5]<<", "<<initGuess[6]<<", "<<initGuess[7]<<"]"<<endl;
+	}
 
 	/*clock_t start, end;
 	start = clock();
 	cost = LE_marker::getInstance().estimate(*(ptr->img), H);
 	end = clock();
-	cout<<"excution time:\t"<<(end-start)<<" ms"<<endl;
-		
-	LE_marker::getInstance().outputData(output);
+	cout<<"excution time:\t"<<(end-start)<<" ms"<<endl;*/
+
+	/*LE_marker::getInstance().outputData(output);
 	fout<<"ambient = "<<output[0]<<endl;
 	fout<<"diffuse = "<<output[1]<<endl;
 	fout<<"normal = ("<<output[2]<<", "<<output[3]<<", "<<output[4]<<")"<<endl;
@@ -121,8 +152,10 @@ int main(void)
 	cout<<"light position = ("<<output[5]<<", "<<output[6]<<", "<<output[7]<<")"<<endl;
 	cout<<"minimum cost = "<<cost<<endl;*/
 
-
+	
+	/*手點*/
 	setMouseCallback("img", onMouse, &data);
+	/***/	
 
 	waitKey();
 	fout.close();
