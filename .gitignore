@@ -1,2 +1,4 @@
 *.opensdf
 LightingEstimation/input/
+*.bat
+LightingEstimation/x64/Debug/*.txt
