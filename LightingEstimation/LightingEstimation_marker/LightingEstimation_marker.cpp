@@ -46,9 +46,10 @@ LightingEstimation_marker::~LightingEstimation_marker()
 	delete opt;
 }
 
-void LightingEstimation_marker::setHomoMatrix(Mat H)
+void LightingEstimation_marker::setHomoMatrix(std::vector<cv::Mat> Hs)
 {
-	_homoMatrix = H.clone();
+	for(int i=0;i<Hs.size();i++)
+		_homoMatrix.push_back(Hs[i]);
 }
 
 void LightingEstimation_marker::setInputImg(Mat img)
@@ -59,7 +60,7 @@ void LightingEstimation_marker::setInputImg(Mat img)
 
 double LightingEstimation_marker::estimate()
 {
-	return estimate(_img, _homoMatrix);
+	return estimate(_img, _homoMatrix[0]);
 }
 
 double LightingEstimation_marker::estimate(cv::Mat img, double imgpts[4][2], double objpts[4][2])

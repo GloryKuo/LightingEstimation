@@ -37,11 +37,17 @@ static void onMouse( int event, int x, int y, int, void* d )
 		destroyWindow("img");
 		count++;
 		resize(*(data->img), *(data->img), Size((int)(data->img->cols*dsFactor), (int)(data->img->rows*dsFactor)));
+		
 		Mat H = getPerspectiveTransform(data->srcPts, data->desPts);    //find homography
+		std:vector<Mat> Hs;
+		Hs.push_back(H);
+		LE_marker::getInstance().setHomoMatrix(Hs);
+		LE_marker::getInstance().setInputImg(*(data->img));
 
 		clock_t start, end;
 		start = clock();
-		cost = LE_marker::getInstance().estimate(*(data->img), H);
+		//cost = LE_marker::getInstance().estimate(*(data->img), H);
+		cost = LE_marker::getInstance().estimate();
 		end = clock();
 		cout<<"execution time:\t"<<(end-start)<<" ms"<<endl;
 		

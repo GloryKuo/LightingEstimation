@@ -22,7 +22,7 @@ public:
 	}
 	static void computeHomgraphy(double imgpts[4][2], double objpts[4][2], cv::Mat& outputH);
 
-	void setHomoMatrix(cv::Mat H);
+	void setHomoMatrix(std::vector<cv::Mat> Hs);
 	void setInputImg(cv::Mat img);
 	double estimate();
 	double estimate(cv::Mat img, double imgpts[4][2], double objpts[4][2]);
@@ -42,12 +42,13 @@ private:
 	double static objFunc(const std::vector<double> &x, std::vector<double> &grad, void* objFunc_data);
 	double static constraint(const std::vector<double> &x, std::vector<double> &grad, void* cons_data);
 
-	cv::Mat _homoMatrix;
+	std::vector<cv::Mat> _homoMatrix;
 	cv::Mat _img;
 	nlopt::opt *opt;
 	bool set_initGuess;
 	cv::Mat _shading;
 	double marker_vertex[4][2];
+	int nMarkers;
 
 	/* output */
 	double _ambient;
