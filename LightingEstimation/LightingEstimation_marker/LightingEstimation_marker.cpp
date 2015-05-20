@@ -19,7 +19,7 @@ void LightingEstimation_marker::init(int numMarkers, double markerWidth)
 	_halfMarkerWidth = markerWidth/2.0;
 
 	const double stopPixelVal = 0.0001;
-	const double stopMaxtime = 3600;    //seconds
+	const double stopMaxtime = 1800;    //seconds
 	const int para_dimention = 5+(numMarkers*3);     //number of paramter to optimize
 	opt = new nlopt::opt(nlopt::LN_COBYLA, para_dimention);
 	opt->set_stopval(stopPixelVal);
@@ -125,7 +125,7 @@ double LightingEstimation_marker::estimate(cv::Mat img, std::vector<cv::Mat> hom
 		for(int i=0;i<markerPts_2d[1].size();i++)
 			markerPts_3d.push_back(Point3f(markerPts_2d[1].at(i).x, markerPts_2d[1].at(i).y, 0));
 
-		Mat markerPts_3d_mat(3, markerPts_3d.size(), CV_32FC1);
+		Mat markerPts_3d_mat(3, (int)markerPts_3d.size(), CV_32FC1);
 		for(int i=0;i<markerPts_3d.size();i++){
 			markerPts_3d_mat.at<float>(0,i) = markerPts_3d[i].x;
 			markerPts_3d_mat.at<float>(1,i) = markerPts_3d[i].y;
@@ -154,8 +154,8 @@ double LightingEstimation_marker::estimate(cv::Mat img, std::vector<cv::Mat> hom
 		for(int i=0;i<markerPts_3d_mat.cols;i++){
 			markerPts_3d_mat_r.at<float>(1,i) += (float)_halfMarkerWidth;
 			markerPts_3d_mat_r.at<float>(2,i) += (float)_halfMarkerWidth;
-			if(i%10000==0) 
-				cout<<imgPts_2d[1].at(i)<<" ==> "<<markerPts_3d_mat.col(i)<<" ==> "<<markerPts_3d_mat_r.col(i)<<endl;
+			/*if(i%10000==0) 
+				cout<<imgPts_2d[1].at(i)<<" ==> "<<markerPts_3d_mat.col(i)<<" ==> "<<markerPts_3d_mat_r.col(i)<<endl;*/
 			worldPts3D_tmp.push_back(Point3f(markerPts_3d_mat_r.at<float>(0,i), 
 				markerPts_3d_mat_r.at<float>(1,i), markerPts_3d_mat_r.at<float>(2,i)));   //the second plane, let y=40.
 		}
