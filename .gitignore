@@ -2,3 +2,6 @@
 LightingEstimation/input/
 *.bat
 LightingEstimation/x64/Debug/*.txt
+LightingEstimation/LightingEstimation.sdf
+LightingEstimation/LightingEstimation_marker/output.txt
+LightingEstimation/LightingEstimation_marker/x64/Debug/LightingEstimation_marker.log
