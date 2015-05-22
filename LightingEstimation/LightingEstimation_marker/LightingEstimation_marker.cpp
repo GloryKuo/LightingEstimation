@@ -7,10 +7,7 @@ using namespace std;
 LightingEstimation_marker::LightingEstimation_marker()
 {
 	set_initGuess = false;
-	_normal[0] = 0.0;      //normal initial guess n=(0, 0, 1)
-	_normal[1] = 0.0;
-	_normal[2] = 1.0;
-	
+
 	const double stopPixelVal = 0.0001;
 	const double stopMaxtime = 1800;    //seconds
 	const int para_dimention = 8;     //number of paramter to optimize
@@ -56,21 +53,39 @@ void LightingEstimation_marker::setInputImg(Mat img)
 {
 	_img = img.clone();
 	//_img = img;
+	_label = Mat::zeros(Size(_img.cols, _img.rows), CV_32FC1);
+}
+
+void LightingEstimation_marker::setLabel(Mat label)
+{
+	unsigned short int nLabels = 0;
+	std::vector<int> colors;
+	bool newL = true;
+	for(int i=0;i<label.rows;i++)
+		for(int j=0;j<label.cols; j++){
+			newL = true;
+			for(int c=0;c<colors.size();c++){
+				if(label.at<uchar>(i,j) == colors[c]){
+					_label.at<float>(i,j) = c+1;
+					newL = false;
+					break;
+				}
+			}
+			if(newL){
+				nLabels++;
+				colors.push_back(label.at<uchar>(i,j));
+				_label.at<float>(i,j) = (float)nLabels;
+			}
+		}
 }
 
 double LightingEstimation_marker::estimate()
 {
-	return estimate(_img, _homoMatrix[0]);
+	return estimate(_img, _homoMatrix);
 }
 
-double LightingEstimation_marker::estimate(cv::Mat img, double imgpts[4][2], double objpts[4][2])
-{
-	cv::Mat H;
-	LE_marker::computeHomgraphy(imgpts, objpts, H);
-	return estimate(img, H);
-}
 
-double LightingEstimation_marker::estimate(cv::Mat img, cv::Mat homography)
+double LightingEstimation_marker::estimate(cv::Mat img, std::vector<cv::Mat> homography)
 {
 
 	/////* setup */////////////////////////////////////////////////////
@@ -88,7 +103,7 @@ double LightingEstimation_marker::estimate(cv::Mat img, cv::Mat homography)
 		for(int j=0;j<shading.cols;j++){
 			imgPts.push_back(Point2f((float)j, (float)i));
 		}
-	perspectiveTransform(imgPts, worldPts_, homography);
+	perspectiveTransform(imgPts, worldPts_, homography[0]);
 		
 	for(int i=0;i<worldPts_.size();i++){
 		worldPts.push_back(Point3f(worldPts_[i].x, worldPts_[i].y, 0));   //Assume only simple plane, let all z=0.

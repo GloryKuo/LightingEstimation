@@ -11,42 +11,43 @@ ofstream fout;
 
 struct onMouseData
 {
-	Mat *img;
+	Mat img, label;
+	string refer_path;
 	std::vector<Point2f> srcPts;
 	std::vector<Point2f> desPts;
-};
+} data;
 
 static void onMouse( int event, int x, int y, int, void* d )
 {
 	static int count = 0;
 	onMouseData *data = static_cast<onMouseData *>(d);
+	static Mat click_img = imread(data->refer_path);
 	if(event != EVENT_LBUTTONDOWN)
 		return;
 	
 	if(count<4){
-		Mat click_img = data->img->clone();
 		data->srcPts[count++] = Point2f((float)x*dsFactor, (float)y*dsFactor);
 		circle(click_img, Point2f((float)x, (float)y), 5, Scalar(0,0,255));
-		imshow("img", click_img);
+		imshow("click", click_img);
 
 		std::cout<<"("<<data->srcPts[count-1].x<<","<<data->srcPts[count-1].y<<")";
 		std::cout<<" --> ("<<data->desPts[count-1].x<<","<<data->desPts[count-1].y<<")";
 		std::cout<<std::endl;
 	}
 	if(count==4){
-		destroyWindow("img");
+		destroyAllWindows();
 		count++;
-		resize(*(data->img), *(data->img), Size((int)(data->img->cols*dsFactor), (int)(data->img->rows*dsFactor)));
+		resize((data->img), (data->img), Size((int)(data->img.cols*dsFactor), (int)(data->img.rows*dsFactor)));
 		
 		Mat H = getPerspectiveTransform(data->srcPts, data->desPts);    //find homography
-		std:vector<Mat> Hs;
+		std::vector<Mat> Hs;
 		Hs.push_back(H);
 		LE_marker::getInstance().setHomoMatrix(Hs);
-		LE_marker::getInstance().setInputImg(*(data->img));
+		LE_marker::getInstance().setInputImg(data->img);
+		LE_marker::getInstance().setLabel(data->label);
 
 		clock_t start, end;
 		start = clock();
-		//cost = LE_marker::getInstance().estimate(*(data->img), H);
 		cost = LE_marker::getInstance().estimate();
 		end = clock();
 		cout<<"execution time:\t"<<(end-start)<<" ms"<<endl;
@@ -72,28 +73,18 @@ static void onMouse( int event, int x, int y, int, void* d )
 	}
 }
 
+void loadConfig(string path);
+
 int main(int argc, char* argv[])
 {
-	/*
-		參數argv[1] input檔案路徑
-		   argv[2] output檔案名
-	*/
-
-
-	string imgPath(argv[1]);
-	Mat img = imread(imgPath);
-	imshow("img", img);
-
-	fout.open(argv[2]);
-	fout<<"name : "<<imgPath<<endl;
-
-	onMouseData data;
+	/**
+		argv[1] config檔案路徑
+	**/
+	loadConfig(argv[1]);
+	
+	/*手點*/
 	data.srcPts.resize(4);
 	data.desPts.resize(4);
-
-	data.img = &img;
-
-	/*手點*/
 	float half_markerLen = 20.0/2;
 	data.desPts[0] = Point2f(-half_markerLen,  half_markerLen);            //clockwise
 	data.desPts[1] = Point2f(half_markerLen, half_markerLen);
@@ -101,70 +92,62 @@ int main(int argc, char* argv[])
 	data.desPts[3] = Point2f( -half_markerLen,  -half_markerLen);
 	/***/
 
-	//double w = img.cols, h = img.rows;
-	//data.srcPts[0] = Point2f(0.0f, 0.0f);
-	//data.srcPts[1] = Point2f(w, 0.0f);
-	//data.srcPts[2] = Point2f(w, h);
-	//data.srcPts[3] = Point2f(0.0f, h);
-
-	//data.desPts[0] = Point2f(-(w/2), (h/2));
-	//data.desPts[1] = Point2f((w/2), (h/2));
-	//data.desPts[2] = Point2f((w/2), -(h/2));
-	//data.desPts[3] = Point2f(-(w/2), -(h/2));
-	//
-	//onMouseData *ptr = &data;
-	//resize(*(ptr->img), *(ptr->img), Size((int)(ptr->img->cols*dsFactor), (int)(ptr->img->rows*dsFactor)));
-	//Mat H = getPerspectiveTransform(data.srcPts, data.desPts);    //find homography
-
-	if(argc > 3){
-		double initGuess[8];
-		for(int i=0;i<8;i++)
-			initGuess[i] = atof(argv[i+3]);
-		LE_marker::getInstance().setInitGuess(initGuess[0], initGuess[1],
-			initGuess[2], initGuess[3], initGuess[4],
-			initGuess[5], initGuess[6], initGuess[7]);
-		fout<<"initial guess: ["<<initGuess[0]<<", "<<initGuess[1]<<", ";
-		fout<<initGuess[2]<<", "<<initGuess[3]<<", "<<initGuess[4]<<", ";
-		fout<<initGuess[5]<<", "<<initGuess[6]<<", "<<initGuess[7]<<"]"<<endl;
-	}
-	else{
-		double initGuess[] = {0.15, 0.6, 0.0, 0.0, 1.0, 0.0, 0.0, 5.0};
-		LE_marker::getInstance().setInitGuess(initGuess[0], initGuess[1],
-			initGuess[2], initGuess[3], initGuess[4],
-			initGuess[5], initGuess[6], initGuess[7]);
-		fout<<"initial guess: ["<<initGuess[0]<<", "<<initGuess[1]<<", ";
-		fout<<initGuess[2]<<", "<<initGuess[3]<<", "<<initGuess[4]<<", ";
-		fout<<initGuess[5]<<", "<<initGuess[6]<<", "<<initGuess[7]<<"]"<<endl;
-	}
-
-	/*clock_t start, end;
-	start = clock();
-	cost = LE_marker::getInstance().estimate(*(ptr->img), H);
-	end = clock();
-	cout<<"excution time:\t"<<(end-start)<<" ms"<<endl;*/
-
-	/*LE_marker::getInstance().outputData(output);
-	fout<<"ambient = "<<output[0]<<endl;
-	fout<<"diffuse = "<<output[1]<<endl;
-	fout<<"normal = ("<<output[2]<<", "<<output[3]<<", "<<output[4]<<")"<<endl;
-	fout<<"light position = ("<<output[5]<<", "<<output[6]<<", "<<output[7]<<")"<<endl;
-	fout<<"minimum cost = "<<cost<<endl;
-
-	cout<<"\nFinished!"<<endl;
-	cout<<"================================="<<endl;
-	cout<<"ambient = "<<output[0]<<endl;
-	cout<<"diffuse = "<<output[1]<<endl;
-	cout<<"normal = ("<<output[2]<<", "<<output[3]<<", "<<output[4]<<")"<<endl;
-	cout<<"light position = ("<<output[5]<<", "<<output[6]<<", "<<output[7]<<")"<<endl;
-	cout<<"minimum cost = "<<cost<<endl;*/
 
 	
 	/*手點*/
-	setMouseCallback("img", onMouse, &data);
+	setMouseCallback("click", onMouse, &data);
 	/***/	
 
 	waitKey();
 	fout.close();
 	
 	return 0;
+}
+
+void loadConfig(string path)
+{
+	/**
+		line 1 input檔案路徑
+		line 2 reference檔案路徑
+		line 3 output檔案名
+		line 4 label檔案路徑 (非必要)
+		line 5 initial guess  (非必要)
+	**/
+
+	ifstream fin(path);
+	string input_path, refer_path;
+	fin >> input_path >> refer_path;
+	Mat img = imread(input_path);
+	imshow("input", img);
+	imshow("click", imread(refer_path));
+	data.img = img.clone();
+	data.refer_path = refer_path;
+
+	string output_path;
+	fin >> output_path;
+	fout.open(output_path);
+	fout << "name : "<<input_path<<endl;
+	if(!fin.eof()){
+		string label_path;
+		fin >> label_path;
+		data.label = imread(label_path).clone();
+	}
+
+	double initGuess[8] = {0.15, 0.6, 0.0, 0.0, 1.0, 0.0, 0.0, 5.0};
+	if(!fin.eof()){
+		string tmp;
+		for(int i=0;i<8;i++){
+			fin>>tmp;
+			initGuess[i] = stod(tmp);
+		}
+	}
+	LE_marker::getInstance().setInitGuess(initGuess[0], initGuess[1],
+			initGuess[2], initGuess[3], initGuess[4],
+			initGuess[5], initGuess[6], initGuess[7]);
+	fout<<"initial guess: ["<<initGuess[0]<<", "<<initGuess[1]<<", ";
+	fout<<initGuess[2]<<", "<<initGuess[3]<<", "<<initGuess[4]<<", ";
+	fout<<initGuess[5]<<", "<<initGuess[6]<<", "<<initGuess[7]<<"]"<<endl;
+		
+
+	fin.close();
 }

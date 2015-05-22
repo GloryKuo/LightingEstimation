@@ -4,3 +4,5 @@ LightingEstimation/input/
 LightingEstimation/x64/Debug/*.txt
 LightingEstimation/LightingEstimation.sdf
 LightingEstimation/LightingEstimation.v11.suo
+*.tlog
+*.sdf

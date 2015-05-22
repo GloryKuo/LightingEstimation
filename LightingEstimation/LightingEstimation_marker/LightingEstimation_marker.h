@@ -24,9 +24,9 @@ public:
 
 	void setHomoMatrix(std::vector<cv::Mat> Hs);
 	void setInputImg(cv::Mat img);
+	void setLabel(cv::Mat label);
 	double estimate();
-	double estimate(cv::Mat img, double imgpts[4][2], double objpts[4][2]);
-	double estimate(cv::Mat img, cv::Mat homography);
+	double estimate(cv::Mat img, std::vector<cv::Mat> homography);
 	void setInitGuess(double ambient, double diffuse, double n_x, double n_y, double n_z, double x, double y, double z);
 	void outputData(double output[5]);
 
@@ -43,12 +43,12 @@ private:
 	double static constraint(const std::vector<double> &x, std::vector<double> &grad, void* cons_data);
 
 	std::vector<cv::Mat> _homoMatrix;
-	cv::Mat _img;
+	cv::Mat _img;          //input image
+	cv::Mat _label;        //segmentation result
 	nlopt::opt *opt;
 	bool set_initGuess;
 	cv::Mat _shading;
 	double marker_vertex[4][2];
-	int nMarkers;
 
 	/* output */
 	double _ambient;

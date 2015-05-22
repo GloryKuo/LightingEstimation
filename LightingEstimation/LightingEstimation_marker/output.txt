@@ -1,2 +1,2 @@
-name : ../input/input31_r2.jpg
+name : ../../input31.jpg
 initial guess: [0.15, 0.6, 0, 0, 1, 0, 0, 5]
