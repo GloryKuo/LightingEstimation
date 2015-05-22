@@ -1,4 +1,4 @@
-﻿已經開始建置於 2015/5/22 下午 02:46:46。
+﻿已經開始建置於 2015/5/22 下午 08:17:04。
      1>節點 2 (Build 目標) 上的專案 "E:\GitHub\LightingEstimation\LightingEstimation\LightingEstimation_marker\LightingEstimation_marker.vcxproj"。
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /IE:\GitHub\LightingEstimation\LightingEstimation\/include/nlopt /IE:\GitHub\LightingEstimation\LightingEstimation\/include /IC:\opencv\build\include /Zi /nologo /W3 /WX- /sdl /Od /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc110.pdb" /Gd /TP /errorReport:prompt LightingEstimation_marker.cpp
@@ -17,4 +17,4 @@
 
 建置成功。
 
-經過時間 00:00:01.98
+經過時間 00:00:01.75

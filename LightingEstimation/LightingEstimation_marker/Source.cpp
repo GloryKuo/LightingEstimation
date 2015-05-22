@@ -6,7 +6,8 @@ using namespace std;
 
 
 float dsFactor = 1.0f;        //downsample ratio
-double output[8],cost;
+double cost;
+std::vector<double> output;
 ofstream fout;
 
 struct onMouseData
@@ -44,7 +45,7 @@ static void onMouse( int event, int x, int y, int, void* d )
 		Hs.push_back(H);
 		LE_marker::getInstance().setHomoMatrix(Hs);
 		LE_marker::getInstance().setInputImg(data->img);
-		LE_marker::getInstance().setLabel(data->label);
+		//LE_marker::getInstance().setLabel(data->label);
 
 		clock_t start, end;
 		start = clock();
@@ -55,7 +56,8 @@ static void onMouse( int event, int x, int y, int, void* d )
 		LE_marker::getInstance().outputData(output);
 		fout<<"ambient = "<<output[0]<<endl;
 		fout<<"diffuse = "<<output[1]<<endl;
-		fout<<"normal = ("<<output[2]<<", "<<output[3]<<", "<<output[4]<<")"<<endl;
+		for(int s=0;s<Hs.size();s++)
+			fout<<"normal "<< s+1 <<" = ("<<output[s*3+2]<<", "<<output[s*3+3]<<", "<<output[s*3+4]<<")"<<endl;
 		fout<<"light position = ("<<output[5]<<", "<<output[6]<<", "<<output[7]<<")"<<endl;
 		fout<<"minimum cost = "<<cost<<endl;
 		fout<<"================================="<<endl;
@@ -67,7 +69,8 @@ static void onMouse( int event, int x, int y, int, void* d )
 		cout<<"================================="<<endl;
 		cout<<"ambient = "<<output[0]<<endl;
 		cout<<"diffuse = "<<output[1]<<endl;
-		cout<<"normal = ("<<output[2]<<", "<<output[3]<<", "<<output[4]<<")"<<endl;
+		for(int s=0;s<Hs.size();s++)
+			cout<<"normal "<< s+1 <<" = ("<<output[s*3+2]<<", "<<output[s*3+3]<<", "<<output[s*3+4]<<")"<<endl;
 		cout<<"light position = ("<<output[5]<<", "<<output[6]<<", "<<output[7]<<")"<<endl;
 		cout<<"minimum cost = "<<cost<<endl;
 	}
@@ -133,20 +136,18 @@ void loadConfig(string path)
 		data.label = imread(label_path).clone();
 	}
 
-	double initGuess[8] = {0.15, 0.6, 0.0, 0.0, 1.0, 0.0, 0.0, 5.0};
+	double initGuess[5] = {0.15, 0.6, 0.0, 0.0, 5.0};
 	if(!fin.eof()){
 		string tmp;
-		for(int i=0;i<8;i++){
+		for(int i=0;i<5;i++){
 			fin>>tmp;
 			initGuess[i] = stod(tmp);
 		}
 	}
 	LE_marker::getInstance().setInitGuess(initGuess[0], initGuess[1],
-			initGuess[2], initGuess[3], initGuess[4],
-			initGuess[5], initGuess[6], initGuess[7]);
+			initGuess[2], initGuess[3], initGuess[4]);
 	fout<<"initial guess: ["<<initGuess[0]<<", "<<initGuess[1]<<", ";
-	fout<<initGuess[2]<<", "<<initGuess[3]<<", "<<initGuess[4]<<", ";
-	fout<<initGuess[5]<<", "<<initGuess[6]<<", "<<initGuess[7]<<"]"<<endl;
+	fout<<initGuess[2]<<", "<<initGuess[3]<<", "<<initGuess[4]<<"]"<<endl;
 		
 
 	fin.close();

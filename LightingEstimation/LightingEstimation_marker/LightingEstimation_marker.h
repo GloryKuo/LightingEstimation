@@ -8,8 +8,8 @@ class objfunc_data
 {
 public:
 	cv::Mat _intensity;
-	std::vector<cv::Point3f> _pts_world;   //the vertex in world coordinate;
-	std::vector<cv::Point2f> _pts_img;   //the pixel in image coordinate;
+	std::vector<std::vector<cv::Point3f>> _pts_world;   //the vertex in world coordinate;
+	std::vector<std::vector<cv::Point2f>> _pts_img;   //the pixel in image coordinate;
 };
 
 typedef class LightingEstimation_marker
@@ -26,9 +26,9 @@ public:
 	void setInputImg(cv::Mat img);
 	void setLabel(cv::Mat label);
 	double estimate();
-	double estimate(cv::Mat img, std::vector<cv::Mat> homography);
-	void setInitGuess(double ambient, double diffuse, double n_x, double n_y, double n_z, double x, double y, double z);
-	void outputData(double output[5]);
+	double estimate(cv::Mat img, std::vector<cv::Mat> homography, cv::Mat label);
+	void setInitGuess(double ambient, double diffuse, double x, double y, double z);
+	void outputData(std::vector<double> &output);
 
 private:
 	LightingEstimation_marker(void);
@@ -53,7 +53,7 @@ private:
 	/* output */
 	double _ambient;
 	double _diffuse;
-	double _normal[3];
+	double _normal[3][3];
 	cv::Point3d _lightPos;
 
 } LE_marker;
