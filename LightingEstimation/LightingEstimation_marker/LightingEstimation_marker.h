@@ -12,6 +12,12 @@ public:
 	std::vector<std::vector<cv::Point2f>> _pts_img;   //the pixel in image coordinate;
 };
 
+class cons_data
+{
+public:
+	int index_marker;
+};
+
 typedef class LightingEstimation_marker
 {
 public:
@@ -22,6 +28,7 @@ public:
 	}
 	static void computeHomgraphy(double imgpts[4][2], double objpts[4][2], cv::Mat& outputH);
 
+	void init(int numMarkers, double markerWidth);
 	void setHomoMatrix(std::vector<cv::Mat> Hs);
 	void setInputImg(cv::Mat img);
 	void setLabel(cv::Mat label);
@@ -38,6 +45,8 @@ private:
 	void setInitGuess();
 	cv::Mat makeShading(cv::Mat src);
 	cv::Mat& getShading();
+	void computeCorrespondRelative(cv::Size imgSize, std::vector<cv::Mat> homography, cv::Mat label,
+		std::vector<std::vector<cv::Point2f>> &imgPts_2d, std::vector<std::vector<cv::Point2f>> &worldPts_2d);
 
 	double static objFunc(const std::vector<double> &x, std::vector<double> &grad, void* objFunc_data);
 	double static constraint(const std::vector<double> &x, std::vector<double> &grad, void* cons_data);
@@ -49,6 +58,7 @@ private:
 	bool set_initGuess;
 	cv::Mat _shading;
 	double marker_vertex[4][2];
+	double _halfMarkerWidth;
 
 	/* output */
 	double _ambient;

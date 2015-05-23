@@ -1,9 +1,10 @@
-name : ../input/synth_19.JPG
-initial guess: [0.15, 0.6, -25, -25, 5]
-ambient = 0.134676
-diffuse = 0.687011
-normal 1 = (0.0370243, -0.0298196, 0.998869)
-light position = (-21.5767, -19.9012, 4.84126)
-minimum cost = 0.000859271
+name : ../../input31.jpg
+initial guess: [0.2, 0.7, 0, -100, 40]
+ambient = 0.384989
+diffuse = 0.717328
+normal 1 = (-0.0105731, 0.0207407, 0.999729)
+normal 2 = (-0.00529675, -0.999986, 7.03196e-006)
+light position = (24.9596, -121.31, 51.8481)
+minimum cost = 0.180006
 =================================
-execution time:	30.941 s
+execution time:	206.842 s

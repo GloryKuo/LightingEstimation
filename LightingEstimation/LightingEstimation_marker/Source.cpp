@@ -1,6 +1,9 @@
 #include "LightingEstimation_marker.h"
 #include <fstream>
 #include <time.h>
+
+#define NUM_MARKER 2
+#define MARKER_LEN 80.0
 using namespace cv;
 using namespace std;
 
@@ -26,7 +29,7 @@ static void onMouse( int event, int x, int y, int, void* d )
 	if(event != EVENT_LBUTTONDOWN)
 		return;
 	
-	if(count<4){
+	if(count < NUM_MARKER*4){
 		data->srcPts[count++] = Point2f((float)x*dsFactor, (float)y*dsFactor);
 		circle(click_img, Point2f((float)x, (float)y), 5, Scalar(0,0,255));
 		imshow("click", click_img);
@@ -35,17 +38,24 @@ static void onMouse( int event, int x, int y, int, void* d )
 		std::cout<<" --> ("<<data->desPts[count-1].x<<","<<data->desPts[count-1].y<<")";
 		std::cout<<std::endl;
 	}
-	if(count==4){
+	if(count == NUM_MARKER*4){
 		destroyAllWindows();
 		count++;
 		resize((data->img), (data->img), Size((int)(data->img.cols*dsFactor), (int)(data->img.rows*dsFactor)));
 		
-		Mat H = getPerspectiveTransform(data->srcPts, data->desPts);    //find homography
-		std::vector<Mat> Hs;
-		Hs.push_back(H);
+		std::vector<cv::Mat> Hs;
+		for(int i=0;i<NUM_MARKER;i++){
+			std::vector<cv::Point2f> src_pts, des_pts;
+			for(int j=i*4;j<(i*4)+4; j++){
+				src_pts.push_back(data->srcPts.at(j));
+				des_pts.push_back(data->desPts.at(j));
+			}
+			Mat H = getPerspectiveTransform(src_pts, des_pts);    //find homography
+			Hs.push_back(H);
+		}
 		LE_marker::getInstance().setHomoMatrix(Hs);
 		LE_marker::getInstance().setInputImg(data->img);
-		//LE_marker::getInstance().setLabel(data->label);
+		LE_marker::getInstance().setLabel(data->label);
 
 		clock_t start, end;
 		start = clock();
@@ -58,7 +68,7 @@ static void onMouse( int event, int x, int y, int, void* d )
 		fout<<"diffuse = "<<output[1]<<endl;
 		for(int s=0;s<Hs.size();s++)
 			fout<<"normal "<< s+1 <<" = ("<<output[s*3+2]<<", "<<output[s*3+3]<<", "<<output[s*3+4]<<")"<<endl;
-		fout<<"light position = ("<<output[5]<<", "<<output[6]<<", "<<output[7]<<")"<<endl;
+		fout<<"light position = ("<<output[2+(NUM_MARKER*3)]<<", "<<output[2+(NUM_MARKER*3)+1]<<", "<<output[2+(NUM_MARKER*3)+2]<<")"<<endl;
 		fout<<"minimum cost = "<<cost<<endl;
 		fout<<"================================="<<endl;
 		fout<<"execution time:\t"<<static_cast<float>(end-start)/1000.0f<<" s"<<endl;
@@ -71,7 +81,7 @@ static void onMouse( int event, int x, int y, int, void* d )
 		cout<<"diffuse = "<<output[1]<<endl;
 		for(int s=0;s<Hs.size();s++)
 			cout<<"normal "<< s+1 <<" = ("<<output[s*3+2]<<", "<<output[s*3+3]<<", "<<output[s*3+4]<<")"<<endl;
-		cout<<"light position = ("<<output[5]<<", "<<output[6]<<", "<<output[7]<<")"<<endl;
+		cout<<"light position = ("<<output[2+(NUM_MARKER*3)]<<", "<<output[2+(NUM_MARKER*3)+1]<<", "<<output[2+(NUM_MARKER*3)+2]<<")"<<endl;
 		cout<<"minimum cost = "<<cost<<endl;
 	}
 }
@@ -86,17 +96,19 @@ int main(int argc, char* argv[])
 	loadConfig(argv[1]);
 	
 	/*手點*/
-	data.srcPts.resize(4);
-	data.desPts.resize(4);
-	float half_markerLen = 20.0/2;
-	data.desPts[0] = Point2f(-half_markerLen,  half_markerLen);            //clockwise
-	data.desPts[1] = Point2f(half_markerLen, half_markerLen);
-	data.desPts[2] = Point2f( half_markerLen, -half_markerLen);
-	data.desPts[3] = Point2f( -half_markerLen,  -half_markerLen);
+	data.srcPts.resize(NUM_MARKER*4);
+	data.desPts.resize(NUM_MARKER*4);
+	float half_markerLen = MARKER_LEN/2;
+	for(int i=0;i<NUM_MARKER;i++){
+		data.desPts[i*4] = Point2f(-half_markerLen,  half_markerLen);            //clockwise
+		data.desPts[i*4+1] = Point2f(half_markerLen, half_markerLen);
+		data.desPts[i*4+2] = Point2f( half_markerLen, -half_markerLen);
+		data.desPts[i*4+3] = Point2f( -half_markerLen,  -half_markerLen);
+	}
 	/***/
 
 
-	
+	LightingEstimation_marker::getInstance().init(NUM_MARKER, MARKER_LEN);
 	/*手點*/
 	setMouseCallback("click", onMouse, &data);
 	/***/	
