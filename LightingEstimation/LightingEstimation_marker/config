@@ -1,5 +1,5 @@
-../../input31.jpg
-../../input31_r2.jpg
+../input/synth_21_r.bmp
+../input/synth_21_r.bmp
 output.txt
-../../input31_label.bmp
-0.2 0.7 0.0 -100.0 40.0
+../input/synth_21_label.bmp
+0.15 0.6 0.0 0.0 15.0

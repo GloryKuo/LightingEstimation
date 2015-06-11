@@ -32,7 +32,7 @@ bool GradientFilter::init(cv::Mat img)
 	img.convertTo(m_inputImg, CV_64FC1, 1/255.0);	  // uint8 to double
 	m_pixelWeights = getPixelWeight(m_inputImg);
 
-	data.lambda = 0.1;
+	data.lambda = lambda;
 	data.itrCount = 0;
 	m_clipped_grad = gradClipping(getGradient(m_inputImg), tao);   //get gradient 
 		
@@ -177,6 +177,5 @@ Mat GradientFilter::getPixelWeight( Mat img )
 	Mat result_double;
 	result.convertTo(result_double, CV_64FC1);
 	
-	//imshow("weight", result_double);
 	return result_double;
 }

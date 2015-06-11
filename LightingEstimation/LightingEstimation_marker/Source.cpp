@@ -3,7 +3,7 @@
 #include <time.h>
 
 #define NUM_MARKER 2
-#define MARKER_LEN 80.0
+#define MARKER_LEN 20.0
 using namespace cv;
 using namespace std;
 
@@ -28,6 +28,16 @@ static void onMouse( int event, int x, int y, int, void* d )
 	static Mat click_img = imread(data->refer_path);
 	if(event != EVENT_LBUTTONDOWN)
 		return;
+
+	/*data->srcPts[0] = Point2f(146,265);
+	data->srcPts[1] = Point2f(344,311);
+	data->srcPts[2] = Point2f(354,521);
+	data->srcPts[3] = Point2f(106,507);
+	data->srcPts[4] = Point2f(220,91);
+	data->srcPts[5] = Point2f(484,195);
+	data->srcPts[6] = Point2f(344,311);
+	data->srcPts[7] = Point2f(146,264);
+	count += 8;*/
 	
 	if(count < NUM_MARKER*4){
 		data->srcPts[count++] = Point2f((float)x*dsFactor, (float)y*dsFactor);
@@ -55,7 +65,8 @@ static void onMouse( int event, int x, int y, int, void* d )
 		}
 		LE_marker::getInstance().setHomoMatrix(Hs);
 		LE_marker::getInstance().setInputImg(data->img);
-		LE_marker::getInstance().setLabel(data->label);
+		if(!data->label.empty())
+			LE_marker::getInstance().setLabel(data->label);
 
 		clock_t start, end;
 		start = clock();

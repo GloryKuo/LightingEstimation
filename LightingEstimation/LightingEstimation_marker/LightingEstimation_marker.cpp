@@ -19,12 +19,12 @@ void LightingEstimation_marker::init(int numMarkers, double markerWidth)
 	_halfMarkerWidth = markerWidth/2.0;
 
 	const double stopPixelVal = 0.0001;
-	const double stopMaxtime = 1800;    //seconds
+	const double stopMaxtime = 60;    //seconds
 	const int para_dimention = 5+(numMarkers*3);     //number of paramter to optimize
 	opt = new nlopt::opt(nlopt::LN_COBYLA, para_dimention);
 	opt->set_stopval(stopPixelVal);
 	opt->set_maxtime(stopMaxtime);
-	opt->set_ftol_rel(0.000001);
+	opt->set_ftol_rel(0.0001);
 	vector<double> lb(para_dimention), ub(para_dimention);
 	lb[0] = 0.0;              //ambient
 	ub[0] = 0.5;
@@ -50,6 +50,17 @@ void LightingEstimation_marker::init(int numMarkers, double markerWidth)
 	ub[2+numMarkers*3+2] = markerWidth*5.0;
 	opt->set_lower_bounds(lb);
 	opt->set_upper_bounds(ub);
+	
+	/*vector<double> init_step(para_dimention);
+	init_step[0] = 0.1;
+	init_step[1] = 0.1;
+	for(int i=0;i<numMarkers*3;i++){
+		init_step[2+i] = 0.05;
+	}
+	init_step[2+numMarkers*3] = 10.0;
+	init_step[2+numMarkers*3+1] = 10.0;
+	init_step[2+numMarkers*3+2] = 10.0;
+	opt->set_initial_step(init_step);*/
 }
 
 void LightingEstimation_marker::setHomoMatrix(std::vector<cv::Mat> Hs)
@@ -62,7 +73,7 @@ void LightingEstimation_marker::setInputImg(Mat img)
 {
 	_img = img.clone();
 	//_img = img;
-	_label = Mat::zeros(Size(_img.cols, _img.rows), CV_32FC1);
+	_label = Mat::ones(Size(_img.cols, _img.rows), CV_32FC1);
 }
 
 void LightingEstimation_marker::setLabel(Mat label)
@@ -99,8 +110,9 @@ double LightingEstimation_marker::estimate(cv::Mat img, std::vector<cv::Mat> hom
 
 	/////* setup */////////////////////////////////////////////////////
 	Mat shading = makeShading(img);
-	//imshow("shading", shading);
-
+	imshow("shading",shading);
+	waitKey(10);
+	
 	/////* convert image coordinate to world coordinate *//////////////////////////
 	
 	vector<vector<Point2f>> imgPts_2d, markerPts_2d;
@@ -190,7 +202,7 @@ double LightingEstimation_marker::estimate(cv::Mat img, std::vector<cv::Mat> hom
 	cons_data *cdata = new cons_data[homography.size()];
 	for(int i=0;i<homography.size();i++){
 		cdata[i].index_marker = i;
-		opt->add_inequality_constraint(constraint, &(cdata[i]), 1e-8);
+		opt->add_equality_constraint(constraint, &(cdata[i]), 0);
 	}
 
 	nlopt::result result = opt->optimize(x, cost);
@@ -277,6 +289,7 @@ double LightingEstimation_marker::objFunc(const std::vector<double> &x, std::vec
 	Mat n(3, 1, CV_64FC1);	
 	Mat l(3, 1, CV_64FC1);
 	double sumCost = 0.0;
+	int numMarker = data->_pts_world.size();
 
 	for(int s=0;s<data->_pts_world.size();s++){
 		for(int i=0;i<3;i++)
@@ -295,14 +308,14 @@ double LightingEstimation_marker::objFunc(const std::vector<double> &x, std::vec
 			else if(s==2)
 				offset = (n.at<double>(1)*data->_pts_world[s].at(i).y + n.at<double>(2)*data->_pts_world[s].at(i).z)/(-n.at<double>(0));
 			else{
-				cout<<"invalid \"_pts_world.size()\"."<<endl;
+				std::cout<<"invalid \"_pts_world.size()\"."<<endl;
 				return 0.0;
 			}
 
 			double *lp = l.ptr<double>(0);
-			lp[0] = x[2+s*3] - (s==2)? offset : data->_pts_world[s].at(i).x;
-			lp[1] = x[2+s*3+1] - (s==1)? offset : data->_pts_world[s].at(i).y;
-			lp[2] = x[2+s*3+2] - (s==0)? offset : data->_pts_world[s].at(i).z;;	
+			lp[0] = x[2+numMarker*3] - ((s==2)? offset : data->_pts_world[s].at(i).x);
+			lp[1] = x[2+numMarker*3+1] - ((s==1)? offset : data->_pts_world[s].at(i).y);
+			lp[2] = x[2+numMarker*3+2] - ((s==0)? offset : data->_pts_world[s].at(i).z);	
 			double nl = norm(l, NORM_L2);
 			l /= nl;
 
@@ -317,13 +330,13 @@ double LightingEstimation_marker::objFunc(const std::vector<double> &x, std::vec
 	double averageCost = sumCost/(data->_intensity.rows*data->_intensity.cols);
 #ifdef _LE_DEBUG
 	static int itrCnt = 0;
-	system("cls");
-	cout<<"iteration "<<++itrCnt<<":"<<endl;
-	cout<<"x = [";
+	std::system("cls");
+	std::cout<<"iteration "<<++itrCnt<<":"<<endl;
+	std::cout<<"x = [";
 	for(int i=0;i<x.size()-1;i++)
-		cout<<x[i]<<" ";
-	cout<<x[x.size()-1]<<"]"<<endl;
-	cout<<"cost = "<<averageCost<<endl;
+		std::cout<<x[i]<<" ";
+	std::cout<<x[x.size()-1]<<"]"<<endl;
+	std::cout<<"cost = "<<averageCost<<endl;
 #endif
 	return averageCost;
 }
@@ -335,8 +348,8 @@ double LightingEstimation_marker::constraint(const std::vector<double> &x, std::
 	for(int i=0;i<3;i++)
 		n.at<double>(i) = x[2 + (cdata->index_marker)*3 + i];
 	double cost = norm(n, NORM_L2) - 1;
-
-	return abs(cost);
+	cout<<"Constraint cost:\t"<<cost<<endl;
+	return cost*cost;
 }
 
 void LightingEstimation_marker::outputData(std::vector<double> &output)
