@@ -29,15 +29,15 @@ static void onMouse( int event, int x, int y, int, void* d )
 	if(event != EVENT_LBUTTONDOWN)
 		return;
 
-	/*data->srcPts[0] = Point2f(146,265);
-	data->srcPts[1] = Point2f(344,311);
-	data->srcPts[2] = Point2f(354,521);
-	data->srcPts[3] = Point2f(106,507);
-	data->srcPts[4] = Point2f(220,91);
-	data->srcPts[5] = Point2f(484,195);
-	data->srcPts[6] = Point2f(344,311);
-	data->srcPts[7] = Point2f(146,264);
-	count += 8;*/
+	data->srcPts[0] = Point2f(151,289);
+	data->srcPts[1] = Point2f(347,307);
+	data->srcPts[2] = Point2f(353,503);
+	data->srcPts[3] = Point2f(129,505);
+	data->srcPts[4] = Point2f(135,175);
+	data->srcPts[5] = Point2f(419,207);
+	data->srcPts[6] = Point2f(347,307);
+	data->srcPts[7] = Point2f(151,289);
+	count += 8;
 	
 	if(count < NUM_MARKER*4){
 		data->srcPts[count++] = Point2f((float)x*dsFactor, (float)y*dsFactor);
@@ -74,7 +74,20 @@ static void onMouse( int event, int x, int y, int, void* d )
 		end = clock();
 		cout<<"execution time:\t"<<(end-start)<<" ms"<<endl;
 		
+
+		/* output file *////////////////////////////////////////////
 		LE_marker::getInstance().outputData(output);
+		
+		/* for evaluation */
+		ofstream fout_conf("../output/config_m");
+		fout_conf<<NUM_MARKER<<endl;
+		fout_conf<<output[0]<<endl;
+		fout_conf<<output[1]<<endl;
+		for(int s=0;s<Hs.size();s++)
+			fout_conf<<output[s*3+2]<<" "<<output[s*3+3]<<" "<<output[s*3+4]<<endl;
+		fout_conf<<output[2+(NUM_MARKER*3)]<<" "<<output[2+(NUM_MARKER*3)+1]<<" "<<output[2+(NUM_MARKER*3)+2]<<endl;
+		fout_conf.close();
+
 		fout<<"ambient = "<<output[0]<<endl;
 		fout<<"diffuse = "<<output[1]<<endl;
 		for(int s=0;s<Hs.size();s++)
@@ -84,6 +97,8 @@ static void onMouse( int event, int x, int y, int, void* d )
 		fout<<"================================="<<endl;
 		fout<<"execution time:\t"<<static_cast<float>(end-start)/1000.0f<<" s"<<endl;
 
+
+		/* screen */
 		system("cls");
 		cout<<"Finished!"<<endl;
 		cout<<"execution time:\t"<<static_cast<float>(end-start)/1000.0f<<" s"<<endl;
@@ -104,6 +119,10 @@ int main(int argc, char* argv[])
 	/**
 		argv[1] config檔案路徑
 	**/
+	if(argc<=1){
+		std::cout<<"bad config path."<<std::endl;
+		return -1;
+	}
 	loadConfig(argv[1]);
 	
 	/*手點*/

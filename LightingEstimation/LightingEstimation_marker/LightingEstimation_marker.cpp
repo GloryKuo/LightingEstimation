@@ -18,18 +18,18 @@ void LightingEstimation_marker::init(int numMarkers, double markerWidth)
 {
 	_halfMarkerWidth = markerWidth/2.0;
 
-	const double stopPixelVal = 0.0001;
+	const double stopPixelVal = 0.000001;
 	const double stopMaxtime = 60;    //seconds
 	const int para_dimention = 5+(numMarkers*3);     //number of paramter to optimize
 	opt = new nlopt::opt(nlopt::LN_COBYLA, para_dimention);
 	opt->set_stopval(stopPixelVal);
 	opt->set_maxtime(stopMaxtime);
-	opt->set_ftol_rel(0.0001);
+	opt->set_ftol_rel(0.000001);
 	vector<double> lb(para_dimention), ub(para_dimention);
 	lb[0] = 0.0;              //ambient
 	ub[0] = 0.5;
-	lb[1] = 0.5;              //diffuse
-	ub[1] = 1.0;
+	lb[1] = 0.2;              //diffuse
+	ub[1] = 0.7;
 
 	for(int i=0;i<numMarkers;i++){
 		lb[i*3+2] = (i==3)? 0.0 : -1.0;      //normal_x
@@ -42,12 +42,12 @@ void LightingEstimation_marker::init(int numMarkers, double markerWidth)
 		ub[i*3+4] = 1.0;
 	}
 	
-	lb[2+numMarkers*3] = -markerWidth*10.0;        //light_pos_x
-	ub[2+numMarkers*3] = markerWidth*10.0;
-	lb[2+numMarkers*3+1] = -markerWidth*10.0;        //light_pos_y
-	ub[2+numMarkers*3+1] = markerWidth*10.0;
+	lb[2+numMarkers*3] = -markerWidth*5.0;        //light_pos_x
+	ub[2+numMarkers*3] = markerWidth*5.0;
+	lb[2+numMarkers*3+1] = -markerWidth*5.0;        //light_pos_y
+	ub[2+numMarkers*3+1] = markerWidth*5.0;
 	lb[2+numMarkers*3+2] = 0.0;           //light_pos_z
-	ub[2+numMarkers*3+2] = markerWidth*5.0;
+	ub[2+numMarkers*3+2] = markerWidth*6.0;
 	opt->set_lower_bounds(lb);
 	opt->set_upper_bounds(ub);
 	
@@ -180,6 +180,7 @@ double LightingEstimation_marker::estimate(cv::Mat img, std::vector<cv::Mat> hom
 	data._intensity = shading;
 	data._pts_world = worldPts_3d;
 	data._pts_img = imgPts_2d;
+	data._marker_halfLen  = _halfMarkerWidth;
 
 	double cost = 0.0;
 	vector<double> x;
@@ -295,18 +296,20 @@ double LightingEstimation_marker::objFunc(const std::vector<double> &x, std::vec
 		for(int i=0;i<3;i++)
 			n.at<double>(i) = x[i+2+s*3];
 		double nn = norm(n, NORM_L2);
-		for(int i=0;i<3;i++)
-			n /= nn;      // normalize to unit vector
+		n /= nn;      // normalize to unit vector
 
+		double plane_offset = data->_marker_halfLen;       //使平面平移至marker邊緣
 // TODO: OpenCL
-		for(int i=0;i<data->_pts_world[s].size();i++){	
+
+		for(int i=0;i<data->_pts_world[s].size();i++){
+			/* 投影某3D點到平面上，計算light direction */
 			double offset;
 			if(s==0)
-				offset = (n.at<double>(0)*data->_pts_world[s].at(i).x + n.at<double>(1)*data->_pts_world[s].at(i).y)/(-n.at<double>(2));
+				offset = (n.at<double>(0)*data->_pts_world[s].at(i).x + n.at<double>(1)*data->_pts_world[s].at(i).y)/(-(n.at<double>(2)));
 			else if(s==1)
-				offset = (n.at<double>(0)*data->_pts_world[s].at(i).x + n.at<double>(2)*data->_pts_world[s].at(i).z)/(-n.at<double>(1));
+				offset = (n.at<double>(0)*data->_pts_world[s].at(i).x + n.at<double>(2)*data->_pts_world[s].at(i).z)+plane_offset/(-(n.at<double>(1)));
 			else if(s==2)
-				offset = (n.at<double>(1)*data->_pts_world[s].at(i).y + n.at<double>(2)*data->_pts_world[s].at(i).z)/(-n.at<double>(0));
+				offset = (n.at<double>(1)*data->_pts_world[s].at(i).y + n.at<double>(2)*data->_pts_world[s].at(i).z)+plane_offset/(-(n.at<double>(0)));
 			else{
 				std::cout<<"invalid \"_pts_world.size()\"."<<endl;
 				return 0.0;
@@ -319,6 +322,7 @@ double LightingEstimation_marker::objFunc(const std::vector<double> &x, std::vec
 			double nl = norm(l, NORM_L2);
 			l /= nl;
 
+			/* 計算cost */
 			double Ip = I.at<double>((int)data->_pts_img[s].at(i).y, (int)data->_pts_img[s].at(i).x);
 			double cost = Ip - x[0] - x[1]*(n.dot(l));
 			sumCost += cost*cost;
@@ -327,7 +331,7 @@ double LightingEstimation_marker::objFunc(const std::vector<double> &x, std::vec
 			cout<<"cost = "<<cost*cost<<endl;*/
 		}	
 	}
-	double averageCost = sumCost/(data->_intensity.rows*data->_intensity.cols);
+	double averageCost = sqrt(sumCost)/(data->_intensity.rows*data->_intensity.cols);
 #ifdef _LE_DEBUG
 	static int itrCnt = 0;
 	std::system("cls");

@@ -7,6 +7,7 @@
 class objfunc_data
 {
 public:
+	double _marker_halfLen;
 	cv::Mat _intensity;
 	std::vector<std::vector<cv::Point3f>> _pts_world;   //the vertex in world coordinate;
 	std::vector<std::vector<cv::Point2f>> _pts_img;   //the pixel in image coordinate;

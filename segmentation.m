@@ -1,4 +1,4 @@
-img = imread('./LightingEstimation/input/synth_20.jpg');
+img = imread('./LightingEstimation/input/synth/synth_23.bmp');
 img = rgb2gray(img);
 figure(1); imshow(img);
 pts = ginput(2);
@@ -16,4 +16,4 @@ for i = 1:size(img, 1)
     end
 end
 imshow(img_label);
-imwrite(img_label, 'synth_20_label.bmp');
+imwrite(img_label, './LightingEstimation/input/synth/synth_23_label.bmp');

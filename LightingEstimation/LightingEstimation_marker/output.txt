@@ -1,2 +1,0 @@
-name : ../input/synth_21_r.bmp
-initial guess: [0.15, 0.6, 0, 0, 15]
