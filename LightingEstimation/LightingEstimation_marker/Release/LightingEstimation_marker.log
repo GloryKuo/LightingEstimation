@@ -1,0 +1,15 @@
+﻿已經開始建置於 2015/6/22 下午 10:26:03。
+     1>節點 2 (Build 目標) 上的專案 "E:\GitHub\LightingEstimation\LightingEstimation\LightingEstimation_marker\LightingEstimation_marker.vcxproj"。
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /sdl /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt GradientFilter.cpp LightingEstimation_marker.cpp Source.cpp
+         GradientFilter.cpp
+     1>e:\github\lightingestimation\lightingestimation\lightingestimation_marker\GradientFilter.h(3): fatal error C1083: 無法開啟包含檔案: 'opencv2/opencv.hpp': No such file or directory
+         LightingEstimation_marker.cpp
+     1>e:\github\lightingestimation\lightingestimation\lightingestimation_marker\LightingEstimation_marker.h(2): fatal error C1083: 無法開啟包含檔案: 'opencv2/opencv.hpp': No such file or directory
+         Source.cpp
+     1>e:\github\lightingestimation\lightingestimation\lightingestimation_marker\LightingEstimation_marker.h(2): fatal error C1083: 無法開啟包含檔案: 'opencv2/opencv.hpp': No such file or directory
+     1>專案 "E:\GitHub\LightingEstimation\LightingEstimation\LightingEstimation_marker\LightingEstimation_marker.vcxproj" (Build 目標) 建置完成 -- 失敗。
+
+建置失敗。
+
+經過時間 00:00:00.52

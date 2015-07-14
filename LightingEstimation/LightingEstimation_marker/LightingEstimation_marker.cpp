@@ -42,12 +42,12 @@ void LightingEstimation_marker::init(int numMarkers, double markerWidth)
 		ub[i*3+4] = 1.0;
 	}
 	
-	lb[2+numMarkers*3] = -markerWidth*5.0;        //light_pos_x
-	ub[2+numMarkers*3] = markerWidth*5.0;
-	lb[2+numMarkers*3+1] = -markerWidth*5.0;        //light_pos_y
-	ub[2+numMarkers*3+1] = markerWidth*5.0;
-	lb[2+numMarkers*3+2] = 0.0;           //light_pos_z
-	ub[2+numMarkers*3+2] = markerWidth*6.0;
+	lb[2+numMarkers*3] = -markerWidth*5;        //light_pos_x
+	ub[2+numMarkers*3] = markerWidth*5;
+	lb[2+numMarkers*3+1] = -markerWidth*5;        //light_pos_y
+	ub[2+numMarkers*3+1] = markerWidth*5;
+	lb[2+numMarkers*3+2] = markerWidth*0.5;           //light_pos_z
+	ub[2+numMarkers*3+2] = markerWidth*10.0;
 	opt->set_lower_bounds(lb);
 	opt->set_upper_bounds(ub);
 	
@@ -81,11 +81,16 @@ void LightingEstimation_marker::setLabel(Mat label)
 	unsigned short int nLabels = 0;
 	std::vector<int> colors;
 	bool newL = true;
-	for(int i=label.rows-1;i>=0;i--)
-		for(int j=label.cols-1;j>=0;j--){
+
+	Mat label_gray;
+	if(label.channels()!=1)
+		cvtColor(label, label_gray, CV_BGR2GRAY);
+
+	for(int i=label_gray.rows-1;i>=0;i--){
+		for(int j=label_gray.cols-1;j>=0;j--){
 			newL = true;
 			for(int c=0;c<colors.size();c++){
-				if(label.at<uchar>(i,j) == colors[c]){
+				if(static_cast<int>(label_gray.at<uchar>(i,j)) == colors[c]){
 					_label.at<float>(i,j) = (float)(c+1);
 					newL = false;
 					break;
@@ -93,10 +98,11 @@ void LightingEstimation_marker::setLabel(Mat label)
 			}
 			if(newL){
 				nLabels++;
-				colors.push_back(label.at<uchar>(i,j));
+				colors.push_back(label_gray.at<uchar>(i,j));
 				_label.at<float>(i,j) = (float)nLabels;
 			}
 		}
+	}
 }
 
 double LightingEstimation_marker::estimate()
@@ -111,7 +117,7 @@ double LightingEstimation_marker::estimate(cv::Mat img, std::vector<cv::Mat> hom
 	/////* setup */////////////////////////////////////////////////////
 	Mat shading = makeShading(img);
 	imshow("shading",shading);
-	waitKey(10);
+	waitKey(20);
 	
 	/////* convert image coordinate to world coordinate *//////////////////////////
 	
@@ -146,20 +152,39 @@ double LightingEstimation_marker::estimate(cv::Mat img, std::vector<cv::Mat> hom
 		
 		
 		/* transform marker2 coordinate to marker1 coordinate */
-		/*double srcPts[4][2] = {{-_halfMarkerWidth, _halfMarkerWidth},
-								{_halfMarkerWidth, _halfMarkerWidth},
-								{_halfMarkerWidth, -_halfMarkerWidth},
-								{-_halfMarkerWidth, -_halfMarkerWidth}};
-		double desPts[4][2] = {{-_halfMarkerWidth, _halfMarkerWidth},
-								{_halfMarkerWidth, _halfMarkerWidth},
-								{_halfMarkerWidth, 0},
-								{-_halfMarkerWidth, 0}};
-		Mat homography_2_1;
-		computeHomgraphy(srcPts, desPts, homography_2_1);cout<<homography_2_1<<endl;
-
-		vector<Point2f> worldPts_2d;
-		perspectiveTransform(markerPts_2d[1], worldPts_2d, homography_2_1);*/
 		float mat[3][3] = {{1,0,0},{0,0,-1},{0,1,0}};
+		Mat rorateMat(3, 3, CV_32FC1, mat);
+		Mat markerPts_3d_mat_r = rorateMat * markerPts_3d_mat;
+
+		for(int i=0;i<markerPts_3d_mat.cols;i++){
+			markerPts_3d_mat_r.at<float>(1,i) += (float)_halfMarkerWidth;
+			markerPts_3d_mat_r.at<float>(2,i) += (float)_halfMarkerWidth;
+			/*if(i%10000==0) 
+				cout<<imgPts_2d[1].at(i)<<" ==> "<<markerPts_3d_mat.col(i)<<" ==> "<<markerPts_3d_mat_r.col(i)<<endl;*/
+			worldPts3D_tmp.push_back(Point3f(markerPts_3d_mat_r.at<float>(0,i), 
+				markerPts_3d_mat_r.at<float>(1,i), markerPts_3d_mat_r.at<float>(2,i)));   //the second plane, let y=40.
+		}
+		worldPts_3d.push_back(worldPts3D_tmp);
+	}
+
+	worldPts3D_tmp.clear();
+	/* marker3 coordinate to world coordinate */
+	if(markerPts_2d.size()>=3){
+		vector<Point3f> markerPts_3d;
+		markerPts_3d.reserve(markerPts_2d[2].size());
+		for(int i=0;i<markerPts_2d[2].size();i++)
+			markerPts_3d.push_back(Point3f(markerPts_2d[2].at(i).x, markerPts_2d[2].at(i).y, 0));
+
+		Mat markerPts_3d_mat(3, (int)markerPts_3d.size(), CV_32FC1);
+		for(int i=0;i<markerPts_3d.size();i++){
+			markerPts_3d_mat.at<float>(0,i) = markerPts_3d[i].x;
+			markerPts_3d_mat.at<float>(1,i) = markerPts_3d[i].y;
+			markerPts_3d_mat.at<float>(2,i) = markerPts_3d[i].z;
+		}
+		
+		
+		/* transform marker3 coordinate to marker1 coordinate */
+		float mat[3][3] = {{0,0,1},{0,1,0},{-1,0,0}};
 		Mat rorateMat(3, 3, CV_32FC1, mat);
 		Mat markerPts_3d_mat_r = rorateMat * markerPts_3d_mat;
 
@@ -201,11 +226,18 @@ double LightingEstimation_marker::estimate(cv::Mat img, std::vector<cv::Mat> hom
 	opt->set_min_objective(objFunc, &data);
 
 	cons_data *cdata = new cons_data[homography.size()];
+	
 	for(int i=0;i<homography.size();i++){
 		cdata[i].index_marker = i;
 		opt->add_equality_constraint(constraint, &(cdata[i]), 0);
-	}
 
+		Mat init_normal(3,1, CV_64FC1);
+		init_normal.at<double>(0) = _normal[i][0];
+		init_normal.at<double>(1) = _normal[i][1];
+		init_normal.at<double>(2) = _normal[i][2];
+		cdata[i].init_normal = init_normal;
+		opt->add_equality_constraint(constraint_direction, &(cdata[i]), 0.01);
+	}
 	nlopt::result result = opt->optimize(x, cost);
 #ifdef _LE_DEBUG
 	std::cout<<"finish "<<result<<endl;
@@ -290,7 +322,7 @@ double LightingEstimation_marker::objFunc(const std::vector<double> &x, std::vec
 	Mat n(3, 1, CV_64FC1);	
 	Mat l(3, 1, CV_64FC1);
 	double sumCost = 0.0;
-	int numMarker = data->_pts_world.size();
+	int numMarker = (int)(data->_pts_world.size());
 
 	for(int s=0;s<data->_pts_world.size();s++){
 		for(int i=0;i<3;i++)
@@ -308,8 +340,9 @@ double LightingEstimation_marker::objFunc(const std::vector<double> &x, std::vec
 				offset = (n.at<double>(0)*data->_pts_world[s].at(i).x + n.at<double>(1)*data->_pts_world[s].at(i).y)/(-(n.at<double>(2)));
 			else if(s==1)
 				offset = (n.at<double>(0)*data->_pts_world[s].at(i).x + n.at<double>(2)*data->_pts_world[s].at(i).z)+plane_offset/(-(n.at<double>(1)));
-			else if(s==2)
+			else if(s==2){
 				offset = (n.at<double>(1)*data->_pts_world[s].at(i).y + n.at<double>(2)*data->_pts_world[s].at(i).z)+plane_offset/(-(n.at<double>(0)));
+			}
 			else{
 				std::cout<<"invalid \"_pts_world.size()\"."<<endl;
 				return 0.0;
@@ -354,6 +387,21 @@ double LightingEstimation_marker::constraint(const std::vector<double> &x, std::
 	double cost = norm(n, NORM_L2) - 1;
 	cout<<"Constraint cost:\t"<<cost<<endl;
 	return cost*cost;
+}
+
+double LightingEstimation_marker::constraint_direction(const std::vector<double> &x, std::vector<double> &grad, void* data)
+{
+	cons_data *cdata =  reinterpret_cast<cons_data*>(data);
+	Mat cur_normal(3, 1, CV_64FC1);
+	int idx = cdata->index_marker;
+	cur_normal.at<double>(0) = x[2+(idx*3)];
+	cur_normal.at<double>(1) = x[2+(idx*3)+1];
+	cur_normal.at<double>(2) = x[2+(idx*3)+2];
+	double dir_similar = cur_normal.dot(cdata->init_normal);
+	
+	cout<<"Constraint direction cost:\t"<<(1-dir_similar)<<endl;
+
+	return (1-dir_similar);
 }
 
 void LightingEstimation_marker::outputData(std::vector<double> &output)

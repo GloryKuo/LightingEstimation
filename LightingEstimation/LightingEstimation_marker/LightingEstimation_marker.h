@@ -17,6 +17,7 @@ class cons_data
 {
 public:
 	int index_marker;
+	cv::Mat init_normal;    /* 3x3, each row is a plane */
 };
 
 typedef class LightingEstimation_marker
@@ -51,6 +52,7 @@ private:
 
 	double static objFunc(const std::vector<double> &x, std::vector<double> &grad, void* objFunc_data);
 	double static constraint(const std::vector<double> &x, std::vector<double> &grad, void* cons_data);
+	double static constraint_direction(const std::vector<double> &x, std::vector<double> &grad, void* cons_data);
 
 	std::vector<cv::Mat> _homoMatrix;
 	cv::Mat _img;          //input image

@@ -1,0 +1,12 @@
+﻿已經開始建置於 2015/6/20 下午 03:28:52。
+     1>節點 2 (Build 目標) 上的專案 "E:\GitHub\LightingEstimation\LightingEstimation\LightingEstimation_single\LightingEstimation_single.vcxproj"。
+     1>Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"E:\GitHub\LightingEstimation\LightingEstimation\Release\LightingEstimation_single.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:../lib /LIBPATH:C:\opencv\build\x64\vc11\lib opencv_core247.lib opencv_highgui247.lib opencv_video247.lib opencv_ml247.lib opencv_legacy247.lib opencv_imgproc247.lib opencv_features2d247.lib opencv_objdetect247.lib opencv_calib3d247.lib nlopt.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:\GitHub\LightingEstimation\LightingEstimation\Release\LightingEstimation_single.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:\GitHub\LightingEstimation\LightingEstimation\Release\LightingEstimation_single.lib" /MACHINE:X86 /SAFESEH Release\GradientFilter.obj
+         Release\LightingEstimation_marker.obj
+         Release\Source.obj
+     1>opencv_core247.lib(opencv_core247.dll) : fatal error LNK1112: 模組電腦類型 'x64' 與目標電腦類型 'X86' 衝突
+     1>專案 "E:\GitHub\LightingEstimation\LightingEstimation\LightingEstimation_single\LightingEstimation_single.vcxproj" (Build 目標) 建置完成 -- 失敗。
+
+建置失敗。
+
+經過時間 00:00:00.48

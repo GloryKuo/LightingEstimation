@@ -2,7 +2,7 @@
 #include <fstream>
 #include <time.h>
 
-#define NUM_MARKER 2
+#define NUM_MARKER 3
 #define MARKER_LEN 20.0
 using namespace cv;
 using namespace std;
@@ -11,7 +11,7 @@ using namespace std;
 float dsFactor = 1.0f;        //downsample ratio
 double cost;
 std::vector<double> output;
-ofstream fout;
+ofstream fout, fout_conf;
 
 struct onMouseData
 {
@@ -29,15 +29,20 @@ static void onMouse( int event, int x, int y, int, void* d )
 	if(event != EVENT_LBUTTONDOWN)
 		return;
 
-	data->srcPts[0] = Point2f(151,289);
-	data->srcPts[1] = Point2f(347,307);
-	data->srcPts[2] = Point2f(353,503);
-	data->srcPts[3] = Point2f(129,505);
-	data->srcPts[4] = Point2f(135,175);
-	data->srcPts[5] = Point2f(419,207);
-	data->srcPts[6] = Point2f(347,307);
-	data->srcPts[7] = Point2f(151,289);
-	count += 8;
+	//data->srcPts[0] = Point2f(214,288);
+	//data->srcPts[1] = Point2f(386,312);
+	//data->srcPts[2] = Point2f(372,490);
+	//data->srcPts[3] = Point2f(165,458);
+	//data->srcPts[4] = Point2f(184,155);
+	//data->srcPts[5] = Point2f(422,179);
+	//data->srcPts[6] = Point2f(388,311);
+	//data->srcPts[7] = Point2f(214,288);
+	////count += 8;
+	//data->srcPts[8] = Point2f(98,366);
+	//data->srcPts[9] = Point2f(184,155);
+	//data->srcPts[10] = Point2f(214,288);
+	//data->srcPts[11] = Point2f(165,458);
+	//count += 12;
 	
 	if(count < NUM_MARKER*4){
 		data->srcPts[count++] = Point2f((float)x*dsFactor, (float)y*dsFactor);
@@ -79,13 +84,12 @@ static void onMouse( int event, int x, int y, int, void* d )
 		LE_marker::getInstance().outputData(output);
 		
 		/* for evaluation */
-		ofstream fout_conf("../output/config_m");
 		fout_conf<<NUM_MARKER<<endl;
 		fout_conf<<output[0]<<endl;
 		fout_conf<<output[1]<<endl;
 		for(int s=0;s<Hs.size();s++)
-			fout_conf<<output[s*3+2]<<" "<<output[s*3+3]<<" "<<output[s*3+4]<<endl;
-		fout_conf<<output[2+(NUM_MARKER*3)]<<" "<<output[2+(NUM_MARKER*3)+1]<<" "<<output[2+(NUM_MARKER*3)+2]<<endl;
+			fout_conf<<output[s*3+2]<<"\t"<<output[s*3+3]<<"\t"<<output[s*3+4]<<endl;
+		fout_conf<<output[2+(NUM_MARKER*3)]<<"\t"<<output[2+(NUM_MARKER*3)+1]<<"\t"<<output[2+(NUM_MARKER*3)+2]<<endl;
 		fout_conf.close();
 
 		fout<<"ambient = "<<output[0]<<endl;
@@ -191,6 +195,14 @@ void loadConfig(string path)
 	fout<<"initial guess: ["<<initGuess[0]<<", "<<initGuess[1]<<", ";
 	fout<<initGuess[2]<<", "<<initGuess[3]<<", "<<initGuess[4]<<"]"<<endl;
 		
+	if(!fin.eof()){
+		string oconf_path;
+		fin>>oconf_path;
+		fout_conf.open(oconf_path);
+	}
+	else{
+		fout_conf.open("config_m");
+	}
 
 	fin.close();
 }

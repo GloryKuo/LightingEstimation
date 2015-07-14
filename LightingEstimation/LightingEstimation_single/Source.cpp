@@ -11,7 +11,7 @@ using namespace std;
 float dsFactor = 1.0f;        //downsample ratio
 double cost;
 std::vector<double> output;
-ofstream fout;
+ofstream fout, fout_conf;
 
 struct onMouseData
 {
@@ -29,19 +29,19 @@ static void onMouse( int event, int x, int y, int, void* d )
 	if(event != EVENT_LBUTTONDOWN)
 		return;
 
-	data->srcPts[0] = Point2f(151,289);
-	data->srcPts[1] = Point2f(347,307);
-	data->srcPts[2] = Point2f(353,503);
-	data->srcPts[3] = Point2f(129,505);
-	/*for(int i=0;i<4;i++)
-		circle(click_img, data->srcPts[i], 5, Scalar(0,0,255));
-	imshow("click", click_img);
-	waitKey();*/
-	/*data->srcPts[4] = Point2f(116,195);
-	data->srcPts[5] = Point2f(378,91);
-	data->srcPts[6] = Point2f(454,263);
-	data->srcPts[7] = Point2f(256,311);*/
-	count += 4;
+	//data->srcPts[0] = Point2f(214,288);
+	//data->srcPts[1] = Point2f(386,312);
+	//data->srcPts[2] = Point2f(372,490);
+	//data->srcPts[3] = Point2f(165,458);
+	///*for(int i=0;i<4;i++)
+	//	circle(click_img, data->srcPts[i], 5, Scalar(0,0,255));
+	//imshow("click", click_img);
+	//waitKey();*/
+	///*data->srcPts[4] = Point2f(116,195);
+	//data->srcPts[5] = Point2f(378,91);
+	//data->srcPts[6] = Point2f(454,263);
+	//data->srcPts[7] = Point2f(256,311);*/
+	//count += 4;
 	
 	if(count < NUM_MARKER*4){
 		data->srcPts[count++] = Point2f((float)x*dsFactor, (float)y*dsFactor);
@@ -83,13 +83,12 @@ static void onMouse( int event, int x, int y, int, void* d )
 		LE_marker::getInstance().outputData(output);
 		
 		/* for evaluation */
-		ofstream fout_conf("../output/config_s");
 		fout_conf<<NUM_MARKER<<endl;
 		fout_conf<<output[0]<<endl;
 		fout_conf<<output[1]<<endl;
 		for(int s=0;s<Hs.size();s++)
-			fout_conf<<output[s*3+2]<<" "<<output[s*3+3]<<" "<<output[s*3+4]<<endl;
-		fout_conf<<output[2+(NUM_MARKER*3)]<<" "<<output[2+(NUM_MARKER*3)+1]<<" "<<output[2+(NUM_MARKER*3)+2]<<endl;
+			fout_conf<<output[s*3+2]<<"\t"<<output[s*3+3]<<"\t"<<output[s*3+4]<<endl;
+		fout_conf<<output[2+(NUM_MARKER*3)]<<"\t"<<output[2+(NUM_MARKER*3)+1]<<"\t"<<output[2+(NUM_MARKER*3)+2]<<endl;
 		fout_conf.close();
 
 		fout<<"ambient = "<<output[0]<<endl;
@@ -150,6 +149,7 @@ int main(int argc, char* argv[])
 
 	waitKey();
 	fout.close();
+	fout_conf.close();
 	
 	return 0;
 }
@@ -162,6 +162,7 @@ void loadConfig(string path)
 		line 3 output檔案名
 		line 4 label檔案路徑 (非必要)
 		line 5 initial guess  (非必要)
+		line 6 relight用conf (非必要)
 	**/
 
 	ifstream fin(path);
@@ -196,6 +197,15 @@ void loadConfig(string path)
 			initGuess[2], initGuess[3], initGuess[4]);
 	fout<<"initial guess: ["<<initGuess[0]<<", "<<initGuess[1]<<", ";
 	fout<<initGuess[2]<<", "<<initGuess[3]<<", "<<initGuess[4]<<"]"<<endl;
+
+	if(!fin.eof()){
+		string oconf_path;
+		fin>>oconf_path;
+		fout_conf.open(oconf_path);
+	}
+	else{
+		fout_conf.open("config_s");
+	}
 		
 
 	fin.close();

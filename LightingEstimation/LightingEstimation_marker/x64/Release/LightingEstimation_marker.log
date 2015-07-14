@@ -1,0 +1,31 @@
+﻿已經開始建置於 2015/7/7 下午 04:09:47。
+     1>節點 2 (Rebuild 目標) 上的專案 "E:\GitHub\LightingEstimation\LightingEstimation\LightingEstimation_marker\LightingEstimation_marker.vcxproj"。
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /I../include/nlopt /I../include /IC:\opencv\build\include\opencv2 /IC:\opencv\build\include /Zi /nologo /W3 /WX- /sdl /O2 /Oi /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Release\\" /Fd"x64\Release\vc110.pdb" /Gd /TP /errorReport:prompt GradientFilter.cpp LightingEstimation_marker.cpp Source.cpp
+         GradientFilter.cpp
+     1>E:\GitHub\LightingEstimation\LightingEstimation\include\nlopt/nlopt.hpp(414): warning C4267: '引數' : 將 'size_t' 轉換為 'unsigned int'，資料可能遺失
+     1>E:\GitHub\LightingEstimation\LightingEstimation\include\nlopt/nlopt.hpp(443): warning C4267: '引數' : 將 'size_t' 轉換為 'unsigned int'，資料可能遺失
+     1>E:\GitHub\LightingEstimation\LightingEstimation\include\nlopt/nlopt.hpp(473): warning C4267: '引數' : 將 'size_t' 轉換為 'unsigned int'，資料可能遺失
+     1>E:\GitHub\LightingEstimation\LightingEstimation\include\nlopt/nlopt.hpp(483): warning C4267: '引數' : 將 'size_t' 轉換為 'unsigned int'，資料可能遺失
+         LightingEstimation_marker.cpp
+     1>E:\GitHub\LightingEstimation\LightingEstimation\include\nlopt/nlopt.hpp(414): warning C4267: '引數' : 將 'size_t' 轉換為 'unsigned int'，資料可能遺失
+     1>E:\GitHub\LightingEstimation\LightingEstimation\include\nlopt/nlopt.hpp(443): warning C4267: '引數' : 將 'size_t' 轉換為 'unsigned int'，資料可能遺失
+     1>E:\GitHub\LightingEstimation\LightingEstimation\include\nlopt/nlopt.hpp(473): warning C4267: '引數' : 將 'size_t' 轉換為 'unsigned int'，資料可能遺失
+     1>E:\GitHub\LightingEstimation\LightingEstimation\include\nlopt/nlopt.hpp(483): warning C4267: '引數' : 將 'size_t' 轉換為 'unsigned int'，資料可能遺失
+         Source.cpp
+     1>E:\GitHub\LightingEstimation\LightingEstimation\include\nlopt/nlopt.hpp(414): warning C4267: '引數' : 將 'size_t' 轉換為 'unsigned int'，資料可能遺失
+     1>E:\GitHub\LightingEstimation\LightingEstimation\include\nlopt/nlopt.hpp(443): warning C4267: '引數' : 將 'size_t' 轉換為 'unsigned int'，資料可能遺失
+     1>E:\GitHub\LightingEstimation\LightingEstimation\include\nlopt/nlopt.hpp(473): warning C4267: '引數' : 將 'size_t' 轉換為 'unsigned int'，資料可能遺失
+     1>E:\GitHub\LightingEstimation\LightingEstimation\include\nlopt/nlopt.hpp(483): warning C4267: '引數' : 將 'size_t' 轉換為 'unsigned int'，資料可能遺失
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"E:\GitHub\LightingEstimation\LightingEstimation\x64\Release\LightingEstimation_marker.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:../lib /LIBPATH:C:\opencv\build\x64\vc11\lib opencv_core247.lib opencv_highgui247.lib opencv_video247.lib opencv_ml247.lib opencv_legacy247.lib opencv_imgproc247.lib opencv_features2d247.lib opencv_objdetect247.lib opencv_calib3d247.lib nlopt.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:\GitHub\LightingEstimation\LightingEstimation\x64\Release\LightingEstimation_marker.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:\GitHub\LightingEstimation\LightingEstimation\x64\Release\LightingEstimation_marker.lib" /MACHINE:X64 x64\Release\GradientFilter.obj
+         x64\Release\LightingEstimation_marker.obj
+         x64\Release\Source.obj
+         正在產生程式碼
+         已完成程式碼產生
+         LightingEstimation_marker.vcxproj -> E:\GitHub\LightingEstimation\LightingEstimation\x64\Release\LightingEstimation_marker.exe
+     1>專案 "E:\GitHub\LightingEstimation\LightingEstimation\LightingEstimation_marker\LightingEstimation_marker.vcxproj" (Rebuild 目標) 建置完成。
+
+建置成功。
+
+經過時間 00:00:03.42
