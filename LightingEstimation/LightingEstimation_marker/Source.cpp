@@ -2,7 +2,7 @@
 #include <fstream>
 #include <time.h>
 
-#define NUM_MARKER 3
+#define NUM_MARKER 2
 #define MARKER_LEN 20.0
 using namespace cv;
 using namespace std;
@@ -37,7 +37,7 @@ static void onMouse( int event, int x, int y, int, void* d )
 	//data->srcPts[5] = Point2f(422,179);
 	//data->srcPts[6] = Point2f(388,311);
 	//data->srcPts[7] = Point2f(214,288);
-	////count += 8;
+	//////count += 8;
 	//data->srcPts[8] = Point2f(98,366);
 	//data->srcPts[9] = Point2f(184,155);
 	//data->srcPts[10] = Point2f(214,288);
@@ -46,6 +46,7 @@ static void onMouse( int event, int x, int y, int, void* d )
 	
 	if(count < NUM_MARKER*4){
 		data->srcPts[count++] = Point2f((float)x*dsFactor, (float)y*dsFactor);
+		LE_marker::getInstance().marker_vertex.push_back(data->srcPts[count-1]);
 		circle(click_img, Point2f((float)x, (float)y), 5, Scalar(0,0,255));
 		imshow("click", click_img);
 

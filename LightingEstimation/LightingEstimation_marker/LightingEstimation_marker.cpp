@@ -31,7 +31,15 @@ void LightingEstimation_marker::init(int numMarkers, double markerWidth)
 	lb[1] = 0.2;              //diffuse
 	ub[1] = 0.7;
 
-	for(int i=0;i<numMarkers;i++){
+	/* fix (n1x, n1y, n1z) = (0, 0, 1);  */
+	lb[2] = 0.0;
+	ub[2] = 0.0;
+	lb[3] = 0.0;
+	ub[3] = 0.0;
+	lb[4] = 1.0;
+	ub[4] = 1.0;
+
+	for(int i=1;i<numMarkers;i++){
 		lb[i*3+2] = (i==3)? 0.0 : -1.0;      //normal_x
 		ub[i*3+2] = 1.0;
 
@@ -264,6 +272,28 @@ double LightingEstimation_marker::estimate(cv::Mat img, std::vector<cv::Mat> hom
 void LightingEstimation_marker::computeCorrespondRelative(cv::Size imgSize, std::vector<cv::Mat> homography, cv::Mat label,
 		std::vector<std::vector<Point2f>> &imgPts_2d, std::vector<std::vector<Point2f>> &worldPts_2d)
 {
+	/* 找出畫面中marker的範圍，準備剔除 */
+	std::vector<Point2f> lt, rb;
+	lt.resize(homography.size(), Point2f(1000000.0, 1000000.0));
+	rb.resize(homography.size(), Point2f(-1.0, -1.0));
+	for(int i=0;i<homography.size();i++){
+		for(int j=i*4; j<i*4+4; j++){
+		if(lt[i].x > marker_vertex[j].x)
+			lt[i].x = marker_vertex[j].x;
+		if(lt[i].y > marker_vertex[j].y)
+			lt[i].y = marker_vertex[j].y;
+		if(rb[i].x < marker_vertex[j].x)
+			rb[i].x = marker_vertex[j].x;
+		if(rb[i].y < marker_vertex[j].y)
+			rb[i].y = marker_vertex[j].y;
+		}
+	}
+	/*Mat show = _img.clone();
+	for(int i=0;i<lt.size();i++)
+		rectangle(test, lt[i], rb[i], Scalar(0, 0, 255));
+	imshow("marker boundary", show);
+	waitKey(20);*/
+
 	for(int s=0;s<homography.size();s++){
 		vector<Point2f> imgPts_tmp, worldPts_tmp;
 		imgPts_tmp.reserve(imgSize.width*imgSize.height);
@@ -271,6 +301,10 @@ void LightingEstimation_marker::computeCorrespondRelative(cv::Size imgSize, std:
 
 		for(int i=0;i<imgSize.height;i++)
 			for(int j=0;j<imgSize.width;j++){
+				
+				if( rb[s].x > j && j < lt[s].x && rb[s].y > i && i < lt[s].y)
+					continue;
+
 				if(label.at<float>(i,j) == s+1)
 					imgPts_tmp.push_back(Point2f((float)j, (float)i));
 			}
@@ -325,8 +359,9 @@ double LightingEstimation_marker::objFunc(const std::vector<double> &x, std::vec
 	int numMarker = (int)(data->_pts_world.size());
 
 	for(int s=0;s<data->_pts_world.size();s++){
+
 		for(int i=0;i<3;i++)
-			n.at<double>(i) = x[i+2+s*3];
+		n.at<double>(i) = x[i+2+s*3];
 		double nn = norm(n, NORM_L2);
 		n /= nn;      // normalize to unit vector
 
@@ -444,4 +479,13 @@ void LightingEstimation_marker::computeHomgraphy(double imgpts[4][2], double obj
 		desPts.push_back(Point2f((float)objpts[i][0], (float)objpts[i][1]));
 	}
 	outputH = getPerspectiveTransform(srcPts, desPts);    //find homography
+}
+
+void LightingEstimation_marker::getLightPara(double lightPara[5])
+{
+	lightPara[0] = _ambient;
+	lightPara[1] = _diffuse;
+	lightPara[2] = _lightPos.x;
+	lightPara[3] = _lightPos.y;
+	lightPara[4] = _lightPos.z;
 }

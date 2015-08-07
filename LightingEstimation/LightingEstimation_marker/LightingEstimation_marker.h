@@ -38,6 +38,10 @@ public:
 	double estimate(cv::Mat img, std::vector<cv::Mat> homography, cv::Mat label);
 	void setInitGuess(double ambient, double diffuse, double x, double y, double z);
 	void outputData(std::vector<double> &output);
+	void getLightPara(double lightPara[5]);
+
+	
+	std::vector<cv::Point2f> marker_vertex;  //marker每個邊角座標 NUM_MARKER*4
 
 private:
 	LightingEstimation_marker(void);
@@ -60,7 +64,6 @@ private:
 	nlopt::opt *opt;
 	bool set_initGuess;
 	cv::Mat _shading;
-	double marker_vertex[4][2];
 	double _halfMarkerWidth;
 
 	/* output */

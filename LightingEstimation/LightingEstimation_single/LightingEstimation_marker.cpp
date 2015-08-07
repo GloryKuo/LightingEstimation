@@ -420,3 +420,12 @@ void LightingEstimation_marker::computeHomgraphy(double imgpts[4][2], double obj
 	}
 	outputH = getPerspectiveTransform(srcPts, desPts);    //find homography
 }
+
+void LightingEstimation_marker::getLightPara(double lightPara[5])
+{
+	lightPara[0] = _ambient;
+	lightPara[1] = _diffuse;
+	lightPara[2] = _lightPos.x;
+	lightPara[3] = _lightPos.y;
+	lightPara[4] = _lightPos.z;
+}

@@ -38,6 +38,7 @@ public:
 	double estimate(cv::Mat img, std::vector<cv::Mat> homography, cv::Mat label);
 	void setInitGuess(double ambient, double diffuse, double x, double y, double z);
 	void outputData(std::vector<double> &output);
+	void getLightPara(double lightPara[5]);
 
 private:
 	LightingEstimation_marker(void);

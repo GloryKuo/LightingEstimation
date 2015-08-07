@@ -1,2 +1,9 @@
-name : ../input/synth/synth_52.bmp
+name : ../input/input26.jpg
 initial guess: [0.2, 0.5, 0, 0, 20]
+ambient = 0.316562
+diffuse = 0.462335
+normal 1 = (0, 0, 1)
+light position = (-18.8914, 23.674, 17.8246)
+minimum cost = 0.000227165
+=================================
+execution time:	59.626 s
